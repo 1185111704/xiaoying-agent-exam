@@ -181,4 +181,6 @@ def test_report_reads_draft_from_database_across_runs(make_box):
     assert m01["draft"]["status"] == "pending_confirmation"
     assert m01["draft"]["slot"] == "2026-11-03 19:00" and m01["draft"]["this_run"] == "none"
     assert m01["suggested_slot"] == "2026-11-03 19:00"
-    assert m01["outcome"] == "draft_saved_pending_confirmation"
+    # 本轮只请求了确认、未重新保存：结论是等待确认，草稿事实照样如实展示
+    assert m01["outcome"] == "awaiting_confirmation"
+    assert any("上一轮" in n for n in m01["notices"])

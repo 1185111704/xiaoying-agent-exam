@@ -100,7 +100,7 @@ def _item_report(
         outcome = "blocked"
     elif last_save and last_save.result.get("status") == "failed" and not good:
         outcome = "save_failed"
-    elif active:
+    elif active and good:
         outcome = "draft_saved_pending_confirmation" if pending else "draft_saved"
     elif confirms:
         outcome = "awaiting_confirmation"
@@ -112,6 +112,9 @@ def _item_report(
         for d in displaced
         if d.get("material_id") == mid
     ]
+    if active and not good and not blocked:
+        # 草稿是上一轮留下的：如实展示，但本轮未复审，不算"已保存/已完成"
+        notices.append(f"库中有上一轮保存的草稿（{state['slot']}），本轮未重新审核保存")
     draft: dict[str, Any] = {
         "status": "not_saved",
         "draft_id": None,
@@ -142,7 +145,7 @@ def _item_report(
         "risk_reasons": reasons,
         "requested_slot": item.get("publish_at"),
         "fixed": bool(item.get("fixed")),
-        "suggested_slot": state["slot"] if active and not blocked else None,
+        "suggested_slot": state["slot"] if active and (good or confirms) and not blocked else None,
         "draft": draft,
         "pending_confirmations": pending,
         "block": {
