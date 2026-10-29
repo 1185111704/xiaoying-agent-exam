@@ -1,0 +1,305 @@
+{
+  "request_id": "REQ-03",
+  "task_status": "completed",
+  "run": {
+    "status": "finished",
+    "steps": 8,
+    "tool_calls": 8,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M04",
+      "review_status": "blocked",
+      "risk_reasons": [
+        {
+          "code": "AD-01",
+          "severity": "block",
+          "evidence": "抖对比测评 全网最强防抖，第一名没有"
+        },
+        {
+          "code": "AD-01",
+          "severity": "block",
+          "evidence": " 全网最强防抖，第一名没有之一"
+        },
+        {
+          "code": "AD-01",
+          "severity": "block",
+          "evidence": "防抖对比测评 全网最强防抖，第一名没"
+        }
+      ],
+      "requested_slot": "2026-11-04 10:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": {
+        "reason_code": "AD-01",
+        "evidence": "抖对比测评 全网最强防抖，第一名没有"
+      },
+      "outcome": "blocked",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M02",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 11:00",
+      "fixed": false,
+      "suggested_slot": "2026-11-04 11:00",
+      "draft": {
+        "status": "draft",
+        "draft_id": "D-M02",
+        "slot": "2026-11-04 11:00",
+        "version": 1,
+        "this_run": "saved"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "draft_saved",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "M04 已阻断；M02 草稿saved于 2026-11-04 11:00",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M04"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "防抖对比测评",
+          "account": "douyin_main",
+          "caption": "全网最强防抖，第一名没有之一",
+          "cover": "m04.jpg",
+          "tags": [
+            "测评"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 2,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M04"
+      },
+      "reason": "检查文案规则",
+      "result": {
+        "ok": true,
+        "hits": [
+          {
+            "rule": "AD-01",
+            "desc": "广告法极限用语",
+            "severity": "block",
+            "evidence": "抖对比测评 全网最强防抖，第一名没有",
+            "matched": "最强"
+          },
+          {
+            "rule": "AD-01",
+            "desc": "广告法极限用语",
+            "severity": "block",
+            "evidence": " 全网最强防抖，第一名没有之一",
+            "matched": "第一"
+          },
+          {
+            "rule": "AD-01",
+            "desc": "广告法极限用语",
+            "severity": "block",
+            "evidence": "防抖对比测评 全网最强防抖，第一名没",
+            "matched": "全网最"
+          }
+        ]
+      },
+      "next_action": "block"
+    },
+    {
+      "step": 3,
+      "tool": "block",
+      "args": {
+        "material_id": "M04",
+        "reason_code": "AD-01",
+        "evidence": "抖对比测评 全网最强防抖，第一名没有"
+      },
+      "reason": "命中阻断级规则",
+      "result": {
+        "ok": true,
+        "blocked": "M04",
+        "draft_cancelled": null
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 4,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "周末旅拍调色教程",
+          "account": "douyin_main",
+          "caption": "三步调出胶片感，新手也能上手",
+          "cover": "m02.jpg",
+          "tags": [
+            "教程"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 5,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "检查文案规则",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 6,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-04",
+        "material_id": "M02"
+      },
+      "reason": "查询该账号当天时段占用",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-04 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 12:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 18:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 20:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 7,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M02",
+        "slot": "2026-11-04 11:00",
+        "needs_confirmation": false,
+        "note": ""
+      },
+      "reason": "要求时段可用",
+      "result": {
+        "ok": true,
+        "status": "saved",
+        "draft_id": "D-M02",
+        "version": 1,
+        "slot": "2026-11-04 11:00",
+        "draft_status": "draft"
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 8,
+      "tool": "finish",
+      "args": {
+        "summary": "M04 已阻断；M02 草稿saved于 2026-11-04 11:00"
+      },
+      "reason": "所有素材已有结论",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "mock"
+}

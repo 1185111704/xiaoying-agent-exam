@@ -1,0 +1,206 @@
+{
+  "request_id": "REQ-07",
+  "task_status": "completed",
+  "run": {
+    "status": "finished",
+    "steps": 4,
+    "tool_calls": 5,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M01",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-03 18:00",
+      "fixed": false,
+      "suggested_slot": "2026-11-03 18:00",
+      "draft": {
+        "status": "draft",
+        "draft_id": "D-M01",
+        "slot": "2026-11-03 18:00",
+        "version": 3,
+        "this_run": "updated",
+        "previous": {
+          "slot": "2026-11-03 21:00",
+          "status": "pending_confirmation"
+        }
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "draft_saved",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "M01《新款三轴云台开箱》（douyin_main）审核通过：元数据无缺失字段，音乐授权记录 LIC-0101 齐备，无人物出镜故无需肖像授权；文案规则检查无命中；素材未在正式排期中。已成功保存草稿：2026-11-03 18:00（版本 3，D-M01），原 21:00 待确认草稿已更新，同一素材仅保留一份草稿。该时段当时空闲，无冲突，因与请求时间一致故无需确认。仅保存草稿，未发布。",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M01"
+      },
+      "reason": "排期前先读取素材元数据，确认缺失字段档位与是否已在正式排期中。",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "新款三轴云台开箱",
+          "account": "douyin_main",
+          "caption": "开箱新款三轴云台，看看实拍防抖效果",
+          "cover": "m01.jpg",
+          "tags": [
+            "开箱",
+            "云台"
+          ],
+          "music": {
+            "used": true,
+            "license_id": "LIC-0101"
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": {
+          "draft_id": "D-M01",
+          "slot": "2026-11-03 21:00",
+          "status": "pending_confirmation",
+          "version": 2
+        }
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 2,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-03",
+        "material_id": "M01"
+      },
+      "reason": "请求时段为 2026-11-03 18:00，需确认该账号当天各时段占用与占用者。",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-03 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 12:00",
+            "status": "scheduled",
+            "holder": "M08",
+            "title": "新品海报动图"
+          },
+          {
+            "slot": "2026-11-03 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 18:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 19:00",
+            "status": "scheduled",
+            "holder": "X40",
+            "title": "临时插播"
+          },
+          {
+            "slot": "2026-11-03 20:00",
+            "status": "scheduled",
+            "holder": "X22",
+            "title": "直播切片"
+          },
+          {
+            "slot": "2026-11-03 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 2,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M01"
+      },
+      "reason": "保存草稿前先做文案规则检查，确认无 block/review 命中。",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 3,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M01",
+        "note": "按请求保存草稿：抖音主号 douyin_main，2026-11-03 18:00。该时段空闲，文案规则无命中；原 21:00 待确认草稿已更新为此时段（同一素材仅保留一份草稿）。仅保存草稿，未发布。",
+        "slot": "2026-11-03 18:00",
+        "needs_confirmation": false
+      },
+      "reason": "目标时段 18:00 空闲且与用户要求一致，因此 needs_confirmation=false 保存草稿。",
+      "result": {
+        "ok": true,
+        "status": "updated",
+        "draft_id": "D-M01",
+        "version": 3,
+        "slot": "2026-11-03 18:00",
+        "draft_status": "draft",
+        "previous": {
+          "slot": "2026-11-03 21:00",
+          "status": "pending_confirmation"
+        }
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 4,
+      "tool": "finish",
+      "args": {
+        "summary": "M01《新款三轴云台开箱》（douyin_main）审核通过：元数据无缺失字段，音乐授权记录 LIC-0101 齐备，无人物出镜故无需肖像授权；文案规则检查无命中；素材未在正式排期中。已成功保存草稿：2026-11-03 18:00（版本 3，D-M01），原 21:00 待确认草稿已更新，同一素材仅保留一份草稿。该时段当时空闲，无冲突，因与请求时间一致故无需确认。仅保存草稿，未发布。"
+      },
+      "reason": "M01 已完成审核并成功保存草稿（18:00），全部素材均有结论。",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "llm:deepseek-flash"
+}

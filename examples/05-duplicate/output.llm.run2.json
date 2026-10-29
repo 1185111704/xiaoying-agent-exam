@@ -1,0 +1,449 @@
+{
+  "request_id": "REQ-05",
+  "task_status": "needs_confirmation",
+  "run": {
+    "status": "finished",
+    "steps": 4,
+    "tool_calls": 8,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M01",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-03 18:00",
+      "fixed": false,
+      "suggested_slot": "2026-11-03 19:00",
+      "draft": {
+        "status": "pending_confirmation",
+        "draft_id": "D-M01",
+        "slot": "2026-11-03 19:00",
+        "version": 1,
+        "this_run": "unchanged"
+      },
+      "pending_confirmations": [
+        {
+          "confirmation_id": "C1",
+          "question": "M01 请求的 2026-11-03 18:00 已被正式排期占用（X21《品牌联名预告》，硬性占用不可挪动）。当前草稿暂放在最近的可用时段 19:00（待你确认）。请选择：",
+          "options": [
+            "确认改到 2026-11-03 19:00（沿用现有草稿）",
+            "改到 2026-11-03 17:00",
+            "改到 2026-11-03 21:00",
+            "其他时间，我再指定"
+          ],
+          "context": {
+            "account": "douyin_main",
+            "requested_slot": "2026-11-03 18:00",
+            "requested_slot_occupied_by": {
+              "slot": "2026-11-03 18:00",
+              "by": "X21",
+              "title": "品牌联名预告",
+              "kind": "正式排期"
+            },
+            "occupied": [
+              {
+                "slot": "2026-11-03 12:00",
+                "by": "M08",
+                "title": "新品海报动图",
+                "kind": "正式排期"
+              },
+              {
+                "slot": "2026-11-03 18:00",
+                "by": "X21",
+                "title": "品牌联名预告",
+                "kind": "正式排期"
+              },
+              {
+                "slot": "2026-11-03 20:00",
+                "by": "X22",
+                "title": "直播切片",
+                "kind": "正式排期"
+              }
+            ],
+            "nearest_free": [
+              "2026-11-03 19:00",
+              "2026-11-03 21:00",
+              "2026-11-03 22:00"
+            ]
+          }
+        },
+        {
+          "confirmation_id": null,
+          "question": "建议时段 2026-11-03 19:00 与要求 2026-11-03 18:00 不同，是否接受？",
+          "context": {
+            "account": "douyin_main",
+            "requested_slot": "2026-11-03 18:00",
+            "requested_slot_occupied_by": {
+              "slot": "2026-11-03 18:00",
+              "by": "X21",
+              "title": "品牌联名预告",
+              "kind": "正式排期"
+            },
+            "occupied": [
+              {
+                "slot": "2026-11-03 12:00",
+                "by": "M08",
+                "title": "新品海报动图",
+                "kind": "正式排期"
+              },
+              {
+                "slot": "2026-11-03 18:00",
+                "by": "X21",
+                "title": "品牌联名预告",
+                "kind": "正式排期"
+              },
+              {
+                "slot": "2026-11-03 20:00",
+                "by": "X22",
+                "title": "直播切片",
+                "kind": "正式排期"
+              }
+            ],
+            "nearest_free": [
+              "2026-11-03 19:00",
+              "2026-11-03 21:00",
+              "2026-11-03 22:00"
+            ]
+          }
+        }
+      ],
+      "block": null,
+      "outcome": "draft_saved_pending_confirmation",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M08",
+      "review_status": "not_checked",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-03 12:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": {
+        "reason_code": "duplicate_already_scheduled",
+        "evidence": "M08《新品海报动图》已在 douyin_main 2026-11-03 12:00 的正式排期中（读取结果 already_scheduled 命中，且时段查询显示该时段 status=scheduled、holder=M08）；请求的 12:00 与之完全一致，属重复提交，本次不新建草稿以免产生重复排期。"
+      },
+      "outcome": "blocked",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "本次请求（REQ-05）处理结果：\n\n1) M01《新款三轴云台开箱》— 待确认（已保存草稿，未发布）\n- 文案规则检查：无命中（0 条）。\n- 请求时段 2026-11-03 18:00 已被正式排期占用：X21《品牌联名预告》（硬性占用，不可擅自挪动），因此无法满足 18:00。\n- 沿用已存在的草稿 D-M01：2026-11-03 19:00，状态 pending_confirmation，save_draft 返回 status=unchanged、version 仍为 1 —— 草稿未变更、未新增重复草稿。\n- 已登记确认项 C1，请你在 19:00 / 17:00 / 21:00 或其他时间中拍板。当天其余已被占用时段：12:00（M08）、20:00（X22）。\n\n2) M08《新品海报动图》— 重复提交，本次不排期\n- 该素材已在 douyin_main 2026-11-03 12:00 的正式排期中，与请求的 12:00 完全一致；本次未新建草稿，也未取消任何草稿，现有正式排期保持原样。\n\n说明：全部操作仅保存/维护草稿，未进行任何发布；M01 需你确认时段后才算定稿。",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M01"
+      },
+      "reason": "先读取 M01 元数据，判断缺失字段档位与是否已有排期",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "新款三轴云台开箱",
+          "account": "douyin_main",
+          "caption": "开箱新款三轴云台，看看实拍防抖效果",
+          "cover": "m01.jpg",
+          "tags": [
+            "开箱",
+            "云台"
+          ],
+          "music": {
+            "used": true,
+            "license_id": "LIC-0101"
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": {
+          "draft_id": "D-M01",
+          "slot": "2026-11-03 19:00",
+          "status": "pending_confirmation",
+          "version": 1
+        }
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M08"
+      },
+      "reason": "先读取 M08 元数据，判断缺失字段档位与是否已在正式排期",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "新品海报动图",
+          "account": "douyin_main",
+          "caption": "新品海报抢先看",
+          "cover": "m08.jpg",
+          "tags": [
+            "海报"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": [
+          {
+            "account": "douyin_main",
+            "slot": "2026-11-03 12:00",
+            "material_id": "M08",
+            "title": "新品海报动图"
+          }
+        ],
+        "existing_draft": null
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 2,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M01"
+      },
+      "reason": "M01 元数据齐全，下一步需做文案规则检查以确定是否存在阻断或需复核项",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 2,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-03",
+        "material_id": "M01"
+      },
+      "reason": "M01 请求时段为 18:00，需确认该时段是否被正式排期或其他草稿占用",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-03 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 12:00",
+            "status": "scheduled",
+            "holder": "M08",
+            "title": "新品海报动图"
+          },
+          {
+            "slot": "2026-11-03 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 18:00",
+            "status": "scheduled",
+            "holder": "X21",
+            "title": "品牌联名预告"
+          },
+          {
+            "slot": "2026-11-03 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 20:00",
+            "status": "scheduled",
+            "holder": "X22",
+            "title": "直播切片"
+          },
+          {
+            "slot": "2026-11-03 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "request_confirmation"
+    },
+    {
+      "step": 3,
+      "tool": "request_confirmation",
+      "args": {
+        "material_id": "M01",
+        "question": "M01 请求的 2026-11-03 18:00 已被正式排期占用（X21《品牌联名预告》，硬性占用不可挪动）。当前草稿暂放在最近的可用时段 19:00（待你确认）。请选择：",
+        "options": [
+          "确认改到 2026-11-03 19:00（沿用现有草稿）",
+          "改到 2026-11-03 17:00",
+          "改到 2026-11-03 21:00",
+          "其他时间，我再指定"
+        ]
+      },
+      "reason": "18:00 被正式排期占用，属不可擅自满足的时段冲突，需用户在替代时段中拍板",
+      "result": {
+        "ok": true,
+        "confirmation_id": "C1",
+        "context": {
+          "account": "douyin_main",
+          "requested_slot": "2026-11-03 18:00",
+          "requested_slot_occupied_by": {
+            "slot": "2026-11-03 18:00",
+            "by": "X21",
+            "title": "品牌联名预告",
+            "kind": "正式排期"
+          },
+          "occupied": [
+            {
+              "slot": "2026-11-03 12:00",
+              "by": "M08",
+              "title": "新品海报动图",
+              "kind": "正式排期"
+            },
+            {
+              "slot": "2026-11-03 18:00",
+              "by": "X21",
+              "title": "品牌联名预告",
+              "kind": "正式排期"
+            },
+            {
+              "slot": "2026-11-03 20:00",
+              "by": "X22",
+              "title": "直播切片",
+              "kind": "正式排期"
+            }
+          ],
+          "nearest_free": [
+            "2026-11-03 19:00",
+            "2026-11-03 21:00",
+            "2026-11-03 22:00"
+          ]
+        }
+      },
+      "next_action": "block"
+    },
+    {
+      "step": 3,
+      "tool": "block",
+      "args": {
+        "material_id": "M08",
+        "reason_code": "duplicate_already_scheduled",
+        "evidence": "M08《新品海报动图》已在 douyin_main 2026-11-03 12:00 的正式排期中（读取结果 already_scheduled 命中，且时段查询显示该时段 status=scheduled、holder=M08）；请求的 12:00 与之完全一致，属重复提交，本次不新建草稿以免产生重复排期。"
+      },
+      "reason": "重复提交且现有正式排期已满足请求，无需新建草稿，本次不排期",
+      "result": {
+        "ok": true,
+        "blocked": "M08",
+        "draft_cancelled": null
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 3,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M01",
+        "slot": "2026-11-03 19:00",
+        "needs_confirmation": true,
+        "note": "请求的 18:00 已被正式排期 X21《品牌联名预告》占用，无法满足；沿用已存在的 19:00 草稿占位（不新建重复草稿），待用户确认。仅为草稿，未发布。"
+      },
+      "reason": "18:00 硬性占用，保留现有 19:00 待确认草稿并标记 needs_confirmation，避免重复新建",
+      "result": {
+        "ok": true,
+        "status": "unchanged",
+        "draft_id": "D-M01",
+        "version": 1,
+        "slot": "2026-11-03 19:00",
+        "draft_status": "pending_confirmation",
+        "context": {
+          "account": "douyin_main",
+          "requested_slot": "2026-11-03 18:00",
+          "requested_slot_occupied_by": {
+            "slot": "2026-11-03 18:00",
+            "by": "X21",
+            "title": "品牌联名预告",
+            "kind": "正式排期"
+          },
+          "occupied": [
+            {
+              "slot": "2026-11-03 12:00",
+              "by": "M08",
+              "title": "新品海报动图",
+              "kind": "正式排期"
+            },
+            {
+              "slot": "2026-11-03 18:00",
+              "by": "X21",
+              "title": "品牌联名预告",
+              "kind": "正式排期"
+            },
+            {
+              "slot": "2026-11-03 20:00",
+              "by": "X22",
+              "title": "直播切片",
+              "kind": "正式排期"
+            }
+          ],
+          "nearest_free": [
+            "2026-11-03 19:00",
+            "2026-11-03 21:00",
+            "2026-11-03 22:00"
+          ]
+        }
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 4,
+      "tool": "finish",
+      "args": {
+        "summary": "本次请求（REQ-05）处理结果：\n\n1) M01《新款三轴云台开箱》— 待确认（已保存草稿，未发布）\n- 文案规则检查：无命中（0 条）。\n- 请求时段 2026-11-03 18:00 已被正式排期占用：X21《品牌联名预告》（硬性占用，不可擅自挪动），因此无法满足 18:00。\n- 沿用已存在的草稿 D-M01：2026-11-03 19:00，状态 pending_confirmation，save_draft 返回 status=unchanged、version 仍为 1 —— 草稿未变更、未新增重复草稿。\n- 已登记确认项 C1，请你在 19:00 / 17:00 / 21:00 或其他时间中拍板。当天其余已被占用时段：12:00（M08）、20:00（X22）。\n\n2) M08《新品海报动图》— 重复提交，本次不排期\n- 该素材已在 douyin_main 2026-11-03 12:00 的正式排期中，与请求的 12:00 完全一致；本次未新建草稿，也未取消任何草稿，现有正式排期保持原样。\n\n说明：全部操作仅保存/维护草稿，未进行任何发布；M01 需你确认时段后才算定稿。"
+      },
+      "reason": "两个素材均已有结论：M01 草稿保留在 19:00 待确认并已登记确认项，M08 因重复提交本次不排期",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "llm:deepseek-flash"
+}

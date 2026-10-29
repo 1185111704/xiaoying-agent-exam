@@ -1,0 +1,10 @@
+{
+  "request_id": "REQ-08",
+  "note": "与 02 相同的请求，以 --max-steps 2 运行，验证达到步数上限时返回 incomplete",
+  "items": [
+    {"material_id": "M03", "publish_at": "2026-11-04 19:00"},
+    {"material_id": "M05", "publish_at": "2026-11-04 20:00"},
+    {"material_id": "M06", "publish_at": "2026-11-04 21:00"},
+    {"material_id": "M99", "publish_at": "2026-11-04 10:00"}
+  ]
+}

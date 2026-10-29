@@ -1,0 +1,268 @@
+{
+  "request_id": "REQ-08",
+  "task_status": "incomplete",
+  "run": {
+    "status": "step_limit",
+    "steps": 2,
+    "tool_calls": 6,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M03",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "FIELD_MISSING",
+          "field": "caption",
+          "detail": "缺少文案，无法审核"
+        }
+      ],
+      "requested_slot": "2026-11-04 19:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M05",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "LICENSE_MISSING",
+          "field": "people.portrait_release_id",
+          "detail": "肖像授权（people.present=true 时必需）"
+        }
+      ],
+      "requested_slot": "2026-11-04 20:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M06",
+      "review_status": "not_checked",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 21:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M99",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "MATERIAL_NOT_FOUND",
+          "detail": "素材库中不存在"
+        }
+      ],
+      "requested_slot": "2026-11-04 10:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": null,
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M03"
+      },
+      "reason": "读取 M03 元数据，确认字段缺失情况与是否已在正式排期",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "城市夜景延时",
+          "account": "xhs_main",
+          "caption": null,
+          "cover": null,
+          "tags": [],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {
+          "reject": {
+            "caption": "缺少文案，无法审核"
+          },
+          "todo": {
+            "cover": "缺少封面",
+            "tags": "缺少标签"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M05"
+      },
+      "reason": "读取 M05 元数据，确认字段缺失情况与是否已在正式排期",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "骑行博主用户故事",
+          "account": "xhs_main",
+          "caption": "一位骑行博主用运动相机记录通勤路",
+          "cover": "m05.jpg",
+          "tags": [
+            "用户故事"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": true,
+            "portrait_release_id": null
+          }
+        },
+        "missing": {
+          "lookup": {
+            "people.portrait_release_id": "肖像授权（people.present=true 时必需）"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M06"
+      },
+      "reason": "读取 M06 元数据，确认字段缺失情况与是否已在正式排期",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "露营混剪",
+          "account": "xhs_main",
+          "caption": "周末露营，记录山里的星空",
+          "cover": "m06.jpg",
+          "tags": [
+            "露营"
+          ],
+          "music": {
+            "used": true,
+            "license_id": null
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {
+          "lookup": {
+            "music.license_id": "音乐授权（music.used=true 时必需）"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M99"
+      },
+      "reason": "读取 M99 元数据，确认素材是否存在及其字段情况",
+      "result": {
+        "ok": false,
+        "error": "MATERIAL_NOT_FOUND",
+        "detail": "素材库中不存在"
+      },
+      "next_action": "lookup_license"
+    },
+    {
+      "step": 2,
+      "tool": "lookup_license",
+      "args": {
+        "material_id": "M05",
+        "kind": "portrait"
+      },
+      "reason": "M05 有真人出镜但 portrait_release_id 缺失，属 lookup 档，需到版权库补查肖像授权",
+      "result": {
+        "ok": true,
+        "status": "not_found",
+        "kind": "portrait"
+      },
+      "next_action": "lookup_license"
+    },
+    {
+      "step": 2,
+      "tool": "lookup_license",
+      "args": {
+        "material_id": "M06",
+        "kind": "music"
+      },
+      "reason": "M06 使用了音乐但 license_id 缺失，属 lookup 档，需到版权库补查音乐授权",
+      "result": {
+        "ok": true,
+        "status": "found",
+        "kind": "music",
+        "record": {
+          "license_id": "LIC-0606",
+          "valid_until": "2027-12-31"
+        }
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "llm:deepseek-flash"
+}

@@ -1,0 +1,286 @@
+{
+  "request_id": "REQ-06",
+  "task_status": "save_failed",
+  "run": {
+    "status": "finished",
+    "steps": 7,
+    "tool_calls": 7,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M02",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-03 10:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "failed"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "save_failed",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "REQ-06 处理结果：M02《周末旅拍调色教程》（douyin_main）\n\n审核结论：通过。\n- 元数据齐全：无缺失字段，未使用音乐、无人物出镜，故无需版权/肖像补查。\n- 文案规则检查：0 条命中（无 block / review）。\n- 时段核对：2026-11-03 10:00 空闲（当日 12:00、18:00、20:00 已被 M08、X21、X22 正式排期占用，与本次无关）。\n\n排期结论：保存失败，未生成草稿。\n- save_draft 两次返回 STORAGE_ERROR / \"injected fault: disk I/O error\"（持续故障），两次都以工具返回为准，如实记为失败。\n- 保存失败后复查时段：2026-11-03 10:00 仍为 free，说明失败时占位已回滚，未残留脏占位，也未影响其他素材的排期。\n- 系统未发布任何内容（本系统仅有草稿能力）。\n\n后续建议：请在存储故障恢复后重跑 REQ-06；M02 已通过审核，届时沿用 2026-11-03 10:00 即可，无需额外确认。",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "先读取 M02 元数据，确认缺失字段档位与是否已在正式排期中",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "周末旅拍调色教程",
+          "account": "douyin_main",
+          "caption": "三步调出胶片感，新手也能上手",
+          "cover": "m02.jpg",
+          "tags": [
+            "教程"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 2,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "元数据齐全且未使用音乐/无人物肖像，无需授权补查，直接做文案规则检查",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 3,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-03",
+        "material_id": "M02"
+      },
+      "reason": "规则无命中，检查用户要求时段 2026-11-03 10:00 是否被占用",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-03 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 12:00",
+            "status": "scheduled",
+            "holder": "M08",
+            "title": "新品海报动图"
+          },
+          {
+            "slot": "2026-11-03 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 18:00",
+            "status": "scheduled",
+            "holder": "X21",
+            "title": "品牌联名预告"
+          },
+          {
+            "slot": "2026-11-03 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 20:00",
+            "status": "scheduled",
+            "holder": "X22",
+            "title": "直播切片"
+          },
+          {
+            "slot": "2026-11-03 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 4,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M02",
+        "needs_confirmation": false,
+        "note": "按用户指定时段 2026-11-03 10:00 排入 douyin_main，该时段当前空闲；草稿仅占位，不发布。",
+        "slot": "2026-11-03 10:00"
+      },
+      "reason": "用户指定时段空闲且规则无命中，按原时段保存草稿，无需确认",
+      "result": {
+        "ok": false,
+        "status": "failed",
+        "error": "STORAGE_ERROR",
+        "detail": "injected fault: disk I/O error"
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 5,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M02",
+        "needs_confirmation": false,
+        "note": "重试保存草稿：2026-11-03 10:00，douyin_main。",
+        "slot": "2026-11-03 10:00"
+      },
+      "reason": "首次保存返回 STORAGE_ERROR（注入故障），先重试一次以判断是偶发还是持续失败",
+      "result": {
+        "ok": false,
+        "status": "failed",
+        "error": "STORAGE_ERROR",
+        "detail": "injected fault: disk I/O error"
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 6,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-03",
+        "material_id": "M02"
+      },
+      "reason": "连续两次保存失败，复查 10:00 时段状态，确认失败后未残留占位（占位已回滚）",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-03 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 12:00",
+            "status": "scheduled",
+            "holder": "M08",
+            "title": "新品海报动图"
+          },
+          {
+            "slot": "2026-11-03 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 18:00",
+            "status": "scheduled",
+            "holder": "X21",
+            "title": "品牌联名预告"
+          },
+          {
+            "slot": "2026-11-03 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 20:00",
+            "status": "scheduled",
+            "holder": "X22",
+            "title": "直播切片"
+          },
+          {
+            "slot": "2026-11-03 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 7,
+      "tool": "finish",
+      "args": {
+        "summary": "REQ-06 处理结果：M02《周末旅拍调色教程》（douyin_main）\n\n审核结论：通过。\n- 元数据齐全：无缺失字段，未使用音乐、无人物出镜，故无需版权/肖像补查。\n- 文案规则检查：0 条命中（无 block / review）。\n- 时段核对：2026-11-03 10:00 空闲（当日 12:00、18:00、20:00 已被 M08、X21、X22 正式排期占用，与本次无关）。\n\n排期结论：保存失败，未生成草稿。\n- save_draft 两次返回 STORAGE_ERROR / \"injected fault: disk I/O error\"（持续故障），两次都以工具返回为准，如实记为失败。\n- 保存失败后复查时段：2026-11-03 10:00 仍为 free，说明失败时占位已回滚，未残留脏占位，也未影响其他素材的排期。\n- 系统未发布任何内容（本系统仅有草稿能力）。\n\n后续建议：请在存储故障恢复后重跑 REQ-06；M02 已通过审核，届时沿用 2026-11-03 10:00 即可，无需额外确认。"
+      },
+      "reason": "M02 审核通过但两次保存均失败，已确认占位回滚，素材结论为“保存失败”，可结束任务",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "llm:deepseek-flash"
+}
