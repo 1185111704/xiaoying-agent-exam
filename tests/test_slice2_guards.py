@@ -109,3 +109,21 @@ def test_reference_instance_end_to_end(tmp_path, capsys):
     assert m01["publish_status"] == "not_published"
     assert m07["outcome"] == "awaiting_confirmation" and m07["suggested_slot"] is None
     assert m07["draft"]["status"] == "not_saved"
+
+
+def test_confirmation_carries_occupancy(tmp_path, capsys):
+    """方案 A：待确认项由程序附上占用清单与最近空位，不依赖模型在问题里描述。"""
+    main(["examples/04-conflict/input.json", "--db", str(tmp_path / "s.db")])
+    m01, m07 = json.loads(capsys.readouterr().out)["items"]
+
+    ctx = m07["pending_confirmations"][0]["context"]
+    assert ctx["requested_slot_occupied_by"]["by"] == "X21"
+    held = {o["slot"][-5:]: o for o in ctx["occupied"]}
+    assert held["19:00"]["by"] == "M01" and held["19:00"]["kind"] == "其他草稿"
+    assert held["20:00"]["kind"] == "正式排期"
+    # 由近到远；距离相同（15:00 与 21:00）按时间先后
+    assert [s[-5:] for s in ctx["nearest_free"]] == ["17:00", "16:00", "15:00"]
+    assert "17:00" in m07["pending_confirmations"][0]["options"][0]
+
+    m01_ctx = m01["pending_confirmations"][0]["context"]
+    assert m01_ctx["requested_slot_occupied_by"]["title"] == "品牌联名预告"

@@ -74,6 +74,7 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
             "confirmation_id": e.result["confirmation_id"],
             "question": e.args.get("question"),
             "options": e.args.get("options", []),
+            "context": e.result.get("context"),
         }
         for e in confirms
     ]
@@ -83,6 +84,7 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
             {
                 "confirmation_id": None,
                 "question": f"建议时段 {good.args['slot']} 与要求 {item.get('publish_at')} 不同，是否接受？",
+                "context": good.result.get("context"),
             }
         )
 

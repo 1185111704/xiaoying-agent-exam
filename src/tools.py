@@ -317,9 +317,13 @@ class ToolBox:
         if rejection := self._guard_save(material_id, slot, needs_confirmation):
             return {"ok": False, "status": "rejected", **rejection}
         status = "pending_confirmation" if needs_confirmation else "draft"
-        return self.store.save_draft(
+        context = self._occupancy_context(material_id) if needs_confirmation else None
+        result = self.store.save_draft(
             material_id, account, slot, status, note, self.request.get("request_id")
         )
+        if result.get("ok") and context:
+            result["context"] = context
+        return result
 
     def _guard_save(self, material_id: str, slot: str, needs_confirmation: bool) -> dict | None:
         """保存守卫：只做否决，返回拒绝原因交还模型；不替模型选择下一步。
@@ -388,11 +392,46 @@ class ToolBox:
             }
         return None
 
+    def _occupancy_context(self, material_id: str) -> dict | None:
+        """要求时段所在账号当天的占用清单 + 离要求时间最近的空闲时段（客观事实，由程序附上）。"""
+        account = self._account(material_id)
+        requested = self.items[material_id]["publish_at"]
+        if not account or self._slot_error(requested):
+            return None
+        slots = self._query_slots(account, requested[:10], material_id)["slots"]
+        occupied = [
+            {
+                "slot": s["slot"],
+                "by": s["holder"],
+                "title": s.get("title"),
+                "kind": "正式排期" if s["status"] == "scheduled" else "其他草稿",
+            }
+            for s in slots
+            if s["status"] != "free"
+        ]
+        free = [s["slot"] for s in slots if s["status"] == "free" and s["slot"] != requested]
+        hour = int(requested[11:13])
+        nearest = sorted(free, key=lambda s: (abs(int(s[11:13]) - hour), s))[:3]
+        requested_by = next((o for o in occupied if o["slot"] == requested), None)
+        return {
+            "account": account,
+            "requested_slot": requested,
+            "requested_slot_occupied_by": requested_by,
+            "occupied": occupied,
+            "nearest_free": nearest,
+        }
+
     def _request_confirmation(
         self, material_id: str, question: str, options: list[str] | None = None
     ) -> dict:
+        if err := self._not_in_request(material_id):
+            return err
         n = len([e for e in self.ledger.entries if e.tool == "request_confirmation"]) + 1
-        return {"ok": True, "confirmation_id": f"C{n}"}
+        return {
+            "ok": True,
+            "confirmation_id": f"C{n}",
+            "context": self._occupancy_context(material_id),
+        }
 
     def _block(self, material_id: str, reason_code: str, evidence: str = "") -> dict:
         if err := self._not_in_request(material_id):
