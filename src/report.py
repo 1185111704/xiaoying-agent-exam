@@ -97,20 +97,30 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
         outcome = "unresolved"
 
     draft_src = good or last_save
+    cancelled = blocked.result.get("draft_cancelled") if blocked else None
+    if cancelled:
+        draft = {
+            "status": "cancelled",
+            "draft_id": cancelled["draft_id"],
+            "version": cancelled["version"],
+            "released_slot": cancelled["released_slot"],
+        }
+    else:
+        draft = {
+            "status": draft_src.result.get("status", draft_src.result.get("error"))
+            if draft_src
+            else "not_saved",
+            "draft_id": good.result.get("draft_id") if good else None,
+            "version": good.result.get("version") if good else None,
+        }
     return {
         "material_id": mid,
         "review_status": review_status,
         "risk_reasons": reasons,
         "requested_slot": item.get("publish_at"),
         "fixed": bool(item.get("fixed")),
-        "suggested_slot": good.args["slot"] if good else None,
-        "draft": {
-            "status": draft_src.result.get("status", draft_src.result.get("error"))
-            if draft_src
-            else "not_saved",
-            "draft_id": good.result.get("draft_id") if good else None,
-            "version": good.result.get("version") if good else None,
-        },
+        "suggested_slot": good.args["slot"] if good and not blocked else None,
+        "draft": draft,
         "pending_confirmations": pending,
         "block": {
             "reason_code": blocked.args.get("reason_code"),

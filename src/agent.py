@@ -36,9 +36,16 @@ class RunResult:
     error: str | None = None
 
 
-def _summary(result: dict[str, Any], limit: int = 300) -> str:
-    text = json.dumps(result, ensure_ascii=False)
-    return text if len(text) <= limit else text[:limit] + "…"
+def _compact(value: Any, max_str: int = 120, max_items: int = 16) -> Any:
+    """trace 用的返回摘要：保留结构，只截断过长的字符串和列表。完整结果在 ledger 中。"""
+    if isinstance(value, dict):
+        return {k: _compact(v, max_str, max_items) for k, v in value.items()}
+    if isinstance(value, list):
+        head = [_compact(v, max_str, max_items) for v in value[:max_items]]
+        return head + ([f"…（共 {len(value)} 项）"] if len(value) > max_items else [])
+    if isinstance(value, str) and len(value) > max_str:
+        return value[:max_str] + "…"
+    return value
 
 
 def run_agent(
@@ -86,7 +93,7 @@ def run_agent(
                     "tool": call.name,
                     "args": entry.args,
                     "reason": entry.reason,
-                    "result": _summary(result),
+                    "result": _compact(result),
                 }
             )
             messages.append(

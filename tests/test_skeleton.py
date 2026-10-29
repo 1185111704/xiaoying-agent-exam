@@ -1,16 +1,14 @@
 """骨架链路测试：脚本化假模型走完一遍循环，验证报告结构、步数上限与 trace。"""
 
 from src.agent import run_agent
-from src.config import Settings
 from src.policies import ScriptedPolicy
 from src.report import build_report
-from src.tools import ToolBox
 
 REQ = {"request_id": "T", "items": [{"material_id": "M02", "publish_at": "2026-11-03 10:00"}]}
 
 
-def _run(script, **limits):
-    box = ToolBox(REQ, Settings().data_dir)
+def _run(make_box, script, **limits):
+    box = make_box(REQ)
     run = run_agent(ScriptedPolicy(script), box, **limits)
     return build_report(REQ, box.ledger, run)
 
@@ -19,8 +17,9 @@ def r(**kw):
     return {**kw, "reason": "test"}
 
 
-def test_happy_path_chain():
+def test_happy_path_chain(make_box):
     rep = _run(
+        make_box,
         [
             [("read_material", r(material_id="M02"))],
             [("check_rules", r(material_id="M02"))],
@@ -32,7 +31,7 @@ def test_happy_path_chain():
                 )
             ],
             [("finish", r(summary="完成"))],
-        ]
+        ],
     )
     assert rep["task_status"] == "completed"
     item = rep["items"][0]
@@ -42,12 +41,12 @@ def test_happy_path_chain():
     assert rep["trace"][0]["next_action"] == "check_rules"
 
 
-def test_step_limit_returns_incomplete():
-    rep = _run([[("read_material", r(material_id="M02"))]] * 10, max_steps=3)
+def test_step_limit_returns_incomplete(make_box):
+    rep = _run(make_box, [[("read_material", r(material_id="M02"))]] * 10, max_steps=3)
     assert rep["run"]["status"] == "step_limit"
     assert rep["task_status"] == "incomplete"
 
 
-def test_invalid_args_returned_as_observation():
-    rep = _run([[("save_draft", {"material_id": "M02"})], [("finish", r(summary="x"))]])
-    assert "INVALID_ARGS" in rep["trace"][0]["result"]
+def test_invalid_args_returned_as_observation(make_box):
+    rep = _run(make_box, [[("save_draft", {"material_id": "M02"})], [("finish", r(summary="x"))]])
+    assert rep["trace"][0]["result"]["error"] == "INVALID_ARGS"

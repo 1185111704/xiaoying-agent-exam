@@ -5,17 +5,12 @@ import json
 import pytest
 
 from src.agent import run_agent
-from src.config import Settings, load_dotenv
+from src.config import load_dotenv
 from src.main import load_request, main
 from src.policies import ScriptedPolicy
 from src.report import build_report
-from src.tools import ToolBox
 
 REQ = {"request_id": "T", "items": [{"material_id": "M02", "publish_at": "2026-11-03 10:00"}]}
-
-
-def _box():
-    return ToolBox(REQ, Settings().data_dir)
 
 
 @pytest.mark.parametrize(
@@ -28,29 +23,29 @@ def _box():
         ({"material_id": "M02"}, "缺少参数"),
     ],
 )
-def test_bad_model_args_become_invalid_args(args, detail):
-    result = _box().call(1, "read_material", args)
+def test_bad_model_args_become_invalid_args(make_box, args, detail):
+    result = make_box(REQ).call(1, "read_material", args)
     assert result["error"] == "INVALID_ARGS" and detail in result["detail"]
 
 
-def test_string_boolean_rejected():
+def test_string_boolean_rejected(make_box):
     args = {
         "material_id": "M02",
         "slot": "2026-11-03 10:00",
         "needs_confirmation": "false",
         "reason": "r",
     }
-    assert _box().call(1, "save_draft", args)["error"] == "INVALID_ARGS"
+    assert make_box(REQ).call(1, "save_draft", args)["error"] == "INVALID_ARGS"
 
 
-def test_tool_exception_is_observation_not_crash(monkeypatch):
-    box = _box()
+def test_tool_exception_is_observation_not_crash(make_box, monkeypatch):
+    box = make_box(REQ)
     monkeypatch.setattr(box, "_check_rules", lambda **_: 1 / 0)
     result = box.call(1, "check_rules", {"material_id": "M02", "reason": "r"})
     assert result["ok"] is False and result["error"] == "TOOL_ERROR"
 
 
-def test_tool_limit_stops_before_next_model_call():
+def test_tool_limit_stops_before_next_model_call(make_box):
     calls = []
 
     class Counting(ScriptedPolicy):
@@ -59,14 +54,14 @@ def test_tool_limit_stops_before_next_model_call():
             return super().decide(messages, tools)
 
     script = [[("read_material", {"material_id": "M02", "reason": "r"})]] * 5
-    box = _box()
+    box = make_box(REQ)
     run = run_agent(Counting(script), box, max_steps=10, max_tool_calls=2)
     assert run.status == "tool_limit" and len(calls) == 2
     assert build_report(REQ, box.ledger, run)["task_status"] == "incomplete"
 
 
-def test_published_claim_always_flagged():
-    box = _box()
+def test_published_claim_always_flagged(make_box):
+    box = make_box(REQ)
     run = run_agent(
         ScriptedPolicy([[("finish", {"summary": "M01 未发布；M02 已发布", "reason": "r"})]]), box
     )

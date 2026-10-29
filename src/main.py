@@ -18,6 +18,7 @@ from .config import Settings, load_dotenv
 from .mock_policy import MockPolicy
 from .policies import LLMPolicy
 from .report import build_report
+from .store import Store
 from .tools import ToolBox
 
 EXIT_CODES = {"completed": 0, "needs_confirmation": 2}
@@ -50,6 +51,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", type=Path, help="排期请求 JSON")
     parser.add_argument("--policy", choices=["mock", "llm"], default="mock")
     parser.add_argument("--out", type=Path, help="把报告写入文件")
+    parser.add_argument(
+        "--db", type=Path, help="状态库路径（默认 runtime/state.db，跨运行保留草稿）"
+    )
     parser.add_argument("--max-steps", type=_positive_int)
     parser.add_argument("--max-tool-calls", type=_positive_int)
     args = parser.parse_args(argv)
@@ -81,7 +85,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         policy = MockPolicy(request)
 
-    toolbox = ToolBox(request, settings.data_dir)
+    store = Store(args.db or settings.db_path)
+    toolbox = ToolBox(request, settings.data_dir, store)
     run = run_agent(policy, toolbox, settings.max_steps, settings.max_tool_calls)
     report = build_report(request, toolbox.ledger, run)
     report["policy"] = args.policy if args.policy == "mock" else f"llm:{settings.llm_model}"
