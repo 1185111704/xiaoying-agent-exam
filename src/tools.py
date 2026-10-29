@@ -303,7 +303,12 @@ class ToolBox:
         return {"ok": True, "confirmation_id": f"C{n}"}
 
     def _block(self, material_id: str, reason_code: str, evidence: str = "") -> dict:
-        return {"ok": True, "blocked": material_id}
+        if err := self._not_in_request(material_id):
+            return err
+        account = self._account(material_id)
+        # 阻断时撤销该素材已有的草稿并释放时段，避免"已阻断"与"草稿占位"并存
+        cancelled = self.store.cancel_draft(material_id, account) if account else None
+        return {"ok": True, "blocked": material_id, "draft_cancelled": cancelled}
 
     def _finish(self, summary: str) -> dict:
         self.finished = True

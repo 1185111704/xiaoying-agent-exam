@@ -120,6 +120,32 @@ class Store:
         with self._conn() as conn:
             return conn.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]
 
+    # ---- 撤销 ----
+    def cancel_draft(self, material_id: str, account: str) -> dict | None:
+        """撤销素材的活动草稿并释放时段（同一事务）。没有活动草稿时返回 None。"""
+        with self._tx() as conn:
+            row = conn.execute(
+                "SELECT * FROM drafts WHERE material_id = ? AND account = ? "
+                "AND status != 'cancelled'",
+                (material_id, account),
+            ).fetchone()
+            if row is None:
+                return None
+            conn.execute(
+                "DELETE FROM slots WHERE kind = 'draft' AND material_id = ? AND account = ?",
+                (material_id, account),
+            )
+            conn.execute(
+                "UPDATE drafts SET status = 'cancelled', version = version + 1, updated_at = ? "
+                "WHERE draft_id = ?",
+                (_now(), row["draft_id"]),
+            )
+        return {
+            "draft_id": row["draft_id"],
+            "released_slot": row["slot"],
+            "version": row["version"] + 1,
+        }
+
     # ---- 保存 ----
     def save_draft(
         self,

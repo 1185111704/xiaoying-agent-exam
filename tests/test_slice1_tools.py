@@ -125,3 +125,53 @@ def test_schedule_sync_displaces_draft(tmp_path):
     box2 = ToolBox(req("M02"), data, store)
     assert box2.displaced and box2.displaced[0]["material_id"] == "M02"
     assert store.get_draft("M02", "douyin_main")["status"] == "displaced"
+
+
+def test_block_cancels_draft_and_releases_slot(make_box):
+    """审查 #5：先存草稿后被阻断，草稿撤销、时段释放，报告不再同时显示"已阻断"和"已保存"。"""
+    from src.agent import run_agent
+    from src.policies import ScriptedPolicy
+    from src.report import build_report
+
+    request = req("M04", "M02")
+    box = make_box(request)
+    script = [
+        [
+            (
+                "save_draft",
+                {
+                    "material_id": "M04",
+                    "slot": "2026-11-03 10:00",
+                    "needs_confirmation": False,
+                    "reason": "r",
+                },
+            )
+        ],
+        [
+            (
+                "block",
+                {
+                    "material_id": "M04",
+                    "reason_code": "AD-01",
+                    "evidence": "全网最强",
+                    "reason": "r",
+                },
+            )
+        ],
+        [("finish", {"summary": "s", "reason": "r"})],
+    ]
+    rep = build_report(request, box.ledger, run_agent(ScriptedPolicy(script), box))
+    item = rep["items"][0]
+    assert item["outcome"] == "blocked" and item["suggested_slot"] is None
+    assert item["draft"]["status"] == "cancelled"
+    assert item["draft"]["released_slot"] == "2026-11-03 10:00"
+    assert box.store.get_draft("M04", "douyin_main")["status"] == "cancelled"
+    s = _slots(
+        call(box, "query_slots", account="douyin_main", date="2026-11-03", material_id="M02")
+    )
+    assert s["10:00"]["status"] == "free"
+
+
+def test_block_without_draft_is_fine(make_box):
+    res = call(make_box(req("M04")), "block", material_id="M04", reason_code="AD-01")
+    assert res["ok"] and res["draft_cancelled"] is None
