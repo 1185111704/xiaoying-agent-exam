@@ -1,0 +1,8 @@
+{
+  "request_id": "REQ-03",
+  "note": "M04 文案含广告法极限用语（全网最强、第一）；M02 无风险，作为对照",
+  "items": [
+    {"material_id": "M04", "publish_at": "2026-11-04 10:00"},
+    {"material_id": "M02", "publish_at": "2026-11-04 11:00"}
+  ]
+}
