@@ -1,0 +1,12 @@
+01-normal                    exit=0 completed          steps=5  calls=5  M02:draft_saved@10:00
+02-missing-info              exit=2 needs_confirmation steps=13 calls=13 M03:blocked; M05:awaiting_confirmation; M06:draft_saved@21:00; M99:blocked
+03-rule-risk                 exit=0 completed          steps=8  calls=8  M04:blocked; M02:draft_saved@11:00
+04-conflict                  exit=2 needs_confirmation steps=9  calls=9  M01:draft_saved_pending_confirmation@19:00; M07:awaiting_confirmation
+05-duplicate.run1            exit=2 needs_confirmation steps=7  calls=7  M01:draft_saved_pending_confirmation@19:00; M08:blocked
+05-duplicate.run2            exit=2 needs_confirmation steps=7  calls=7  M01:draft_saved_pending_confirmation@19:00; M08:blocked
+06-save-failure.always       exit=1 save_failed        steps=5  calls=5  M02:save_failed
+06-save-failure.once         exit=1 save_failed        steps=5  calls=5  M02:save_failed
+07-resubmit.run1             exit=2 needs_confirmation steps=5  calls=5  M01:draft_saved_pending_confirmation@19:00
+07-resubmit.run2-19-taken    exit=2 needs_confirmation steps=5  calls=5  M01:draft_saved_pending_confirmation@21:00
+07-resubmit.run3-18-freed    exit=0 completed          steps=5  calls=5  M01:draft_saved@18:00
+08-step-limit                exit=1 incomplete         steps=2  calls=2  M03:blocked; M05:unresolved; M06:unresolved; M99:unresolved

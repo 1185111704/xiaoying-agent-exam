@@ -1,0 +1,470 @@
+{
+  "request_id": "REQ-02",
+  "task_status": "needs_confirmation",
+  "run": {
+    "status": "finished",
+    "steps": 13,
+    "tool_calls": 13,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M03",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "FIELD_MISSING",
+          "field": "caption",
+          "detail": "缺少文案，无法审核"
+        }
+      ],
+      "requested_slot": "2026-11-04 19:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": {
+        "reason_code": "FIELD_MISSING",
+        "evidence": "{\"caption\": \"缺少文案，无法审核\"}"
+      },
+      "outcome": "blocked",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M05",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "LICENSE_MISSING",
+          "field": "people.portrait_release_id",
+          "detail": "肖像授权（people.present=true 时必需）"
+        }
+      ],
+      "requested_slot": "2026-11-04 20:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [
+        {
+          "confirmation_id": "C1",
+          "question": "版权库未找到portrait授权，是否补充授权后再排期？",
+          "options": [
+            "补充授权后重新提交",
+            "放弃本次排期"
+          ],
+          "context": {
+            "account": "xhs_main",
+            "requested_slot": "2026-11-04 20:00",
+            "requested_slot_occupied_by": null,
+            "occupied": [],
+            "nearest_free": [
+              "2026-11-04 21:00",
+              "2026-11-04 22:00"
+            ]
+          }
+        }
+      ],
+      "block": null,
+      "outcome": "awaiting_confirmation",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M06",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 21:00",
+      "fixed": false,
+      "suggested_slot": "2026-11-04 21:00",
+      "draft": {
+        "status": "draft",
+        "draft_id": "D-M06",
+        "slot": "2026-11-04 21:00",
+        "version": 1,
+        "this_run": "saved"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "draft_saved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M99",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "MATERIAL_NOT_FOUND",
+          "detail": "素材库中不存在"
+        }
+      ],
+      "requested_slot": "2026-11-04 10:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": {
+        "reason_code": "MATERIAL_NOT_FOUND",
+        "evidence": null
+      },
+      "outcome": "blocked",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "M03 已阻断；M05 已请求确认；M06 草稿saved于 2026-11-04 21:00；M99 已阻断",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M03"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "城市夜景延时",
+          "account": "xhs_main",
+          "caption": null,
+          "cover": null,
+          "tags": [],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {
+          "reject": {
+            "caption": "缺少文案，无法审核"
+          },
+          "todo": {
+            "cover": "缺少封面",
+            "tags": "缺少标签"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "block"
+    },
+    {
+      "step": 2,
+      "tool": "block",
+      "args": {
+        "material_id": "M03",
+        "reason_code": "FIELD_MISSING",
+        "evidence": "{\"caption\": \"缺少文案，无法审核\"}"
+      },
+      "reason": "缺少必需字段，无法排期",
+      "result": {
+        "ok": true,
+        "blocked": "M03",
+        "draft_cancelled": null
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 3,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M05"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "骑行博主用户故事",
+          "account": "xhs_main",
+          "caption": "一位骑行博主用运动相机记录通勤路",
+          "cover": "m05.jpg",
+          "tags": [
+            "用户故事"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": true,
+            "portrait_release_id": null
+          }
+        },
+        "missing": {
+          "lookup": {
+            "people.portrait_release_id": "肖像授权（people.present=true 时必需）"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "lookup_license"
+    },
+    {
+      "step": 4,
+      "tool": "lookup_license",
+      "args": {
+        "material_id": "M05",
+        "kind": "portrait"
+      },
+      "reason": "素材库缺portrait授权，到版权库补查",
+      "result": {
+        "ok": true,
+        "status": "not_found",
+        "kind": "portrait"
+      },
+      "next_action": "request_confirmation"
+    },
+    {
+      "step": 5,
+      "tool": "request_confirmation",
+      "args": {
+        "material_id": "M05",
+        "question": "版权库未找到portrait授权，是否补充授权后再排期？",
+        "options": [
+          "补充授权后重新提交",
+          "放弃本次排期"
+        ]
+      },
+      "reason": "补查无结果，不能擅自排期，交用户决定",
+      "result": {
+        "ok": true,
+        "confirmation_id": "C1",
+        "context": {
+          "account": "xhs_main",
+          "requested_slot": "2026-11-04 20:00",
+          "requested_slot_occupied_by": null,
+          "occupied": [],
+          "nearest_free": [
+            "2026-11-04 21:00",
+            "2026-11-04 22:00"
+          ]
+        }
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 6,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M06"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "露营混剪",
+          "account": "xhs_main",
+          "caption": "周末露营，记录山里的星空",
+          "cover": "m06.jpg",
+          "tags": [
+            "露营"
+          ],
+          "music": {
+            "used": true,
+            "license_id": null
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {
+          "lookup": {
+            "music.license_id": "音乐授权（music.used=true 时必需）"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "lookup_license"
+    },
+    {
+      "step": 7,
+      "tool": "lookup_license",
+      "args": {
+        "material_id": "M06",
+        "kind": "music"
+      },
+      "reason": "素材库缺music授权，到版权库补查",
+      "result": {
+        "ok": true,
+        "status": "found",
+        "kind": "music",
+        "record": {
+          "license_id": "LIC-0606",
+          "valid_until": "2027-12-31"
+        }
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 8,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M06"
+      },
+      "reason": "检查文案规则",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 9,
+      "tool": "query_slots",
+      "args": {
+        "account": "xhs_main",
+        "date": "2026-11-04",
+        "material_id": "M06"
+      },
+      "reason": "查询该账号当天时段占用",
+      "result": {
+        "ok": true,
+        "account": "xhs_main",
+        "slots": [
+          {
+            "slot": "2026-11-04 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 12:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 18:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 20:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-04 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 10,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M06",
+        "slot": "2026-11-04 21:00",
+        "needs_confirmation": false,
+        "note": ""
+      },
+      "reason": "要求时段可用",
+      "result": {
+        "ok": true,
+        "status": "saved",
+        "draft_id": "D-M06",
+        "version": 1,
+        "slot": "2026-11-04 21:00",
+        "draft_status": "draft"
+      },
+      "next_action": "read_material"
+    },
+    {
+      "step": 11,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M99"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": false,
+        "error": "MATERIAL_NOT_FOUND",
+        "detail": "素材库中不存在"
+      },
+      "next_action": "block"
+    },
+    {
+      "step": 12,
+      "tool": "block",
+      "args": {
+        "material_id": "M99",
+        "reason_code": "MATERIAL_NOT_FOUND"
+      },
+      "reason": "素材无法读取，阻断",
+      "result": {
+        "ok": true,
+        "blocked": "M99",
+        "draft_cancelled": null
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 13,
+      "tool": "finish",
+      "args": {
+        "summary": "M03 已阻断；M05 已请求确认；M06 草稿saved于 2026-11-04 21:00；M99 已阻断"
+      },
+      "reason": "所有素材已有结论",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "mock"
+}

@@ -1,0 +1,158 @@
+{
+  "request_id": "REQ-08",
+  "task_status": "incomplete",
+  "run": {
+    "status": "step_limit",
+    "steps": 2,
+    "tool_calls": 2,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M03",
+      "review_status": "info_missing",
+      "risk_reasons": [
+        {
+          "code": "FIELD_MISSING",
+          "field": "caption",
+          "detail": "缺少文案，无法审核"
+        }
+      ],
+      "requested_slot": "2026-11-04 19:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": {
+        "reason_code": "FIELD_MISSING",
+        "evidence": "{\"caption\": \"缺少文案，无法审核\"}"
+      },
+      "outcome": "blocked",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M05",
+      "review_status": "not_checked",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 20:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M06",
+      "review_status": "not_checked",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 21:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    },
+    {
+      "material_id": "M99",
+      "review_status": "not_checked",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-04 10:00",
+      "fixed": false,
+      "suggested_slot": null,
+      "draft": {
+        "status": "not_saved",
+        "draft_id": null,
+        "slot": null,
+        "version": null,
+        "this_run": "none"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "unresolved",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": null,
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M03"
+      },
+      "reason": "先读取素材元数据",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "城市夜景延时",
+          "account": "xhs_main",
+          "caption": null,
+          "cover": null,
+          "tags": [],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {
+          "reject": {
+            "caption": "缺少文案，无法审核"
+          },
+          "todo": {
+            "cover": "缺少封面",
+            "tags": "缺少标签"
+          }
+        },
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "block"
+    },
+    {
+      "step": 2,
+      "tool": "block",
+      "args": {
+        "material_id": "M03",
+        "reason_code": "FIELD_MISSING",
+        "evidence": "{\"caption\": \"缺少文案，无法审核\"}"
+      },
+      "reason": "缺少必需字段，无法排期",
+      "result": {
+        "ok": true,
+        "blocked": "M03",
+        "draft_cancelled": null
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "mock"
+}

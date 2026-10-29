@@ -1,0 +1,191 @@
+{
+  "request_id": "REQ-01",
+  "task_status": "completed",
+  "run": {
+    "status": "finished",
+    "steps": 4,
+    "tool_calls": 5,
+    "error": null
+  },
+  "items": [
+    {
+      "material_id": "M02",
+      "review_status": "passed",
+      "risk_reasons": [],
+      "requested_slot": "2026-11-03 10:00",
+      "fixed": false,
+      "suggested_slot": "2026-11-03 10:00",
+      "draft": {
+        "status": "draft",
+        "draft_id": "D-M02",
+        "slot": "2026-11-03 10:00",
+        "version": 1,
+        "this_run": "saved"
+      },
+      "pending_confirmations": [],
+      "block": null,
+      "outcome": "draft_saved",
+      "notices": [],
+      "publish_status": "not_published"
+    }
+  ],
+  "model_summary": "M02（周末旅拍调色教程，douyin_main）审核结论：通过。元数据完整无缺失；music.used=false、people.present=false，无需补查音乐或肖像授权；文案规则检查无命中。排期：已按要求保存草稿，时段 2026-11-03 10:00（该时段空闲，无冲突），draft_id=D-M02，状态=draft。注意：仅为草稿，未发布；该时段同日 12:00/18:00/20:00 已被 M08/X21/X22 正式占用，本素材不受影响。保存结果以 save_draft 返回为准，已成功。",
+  "consistency_warnings": [],
+  "trace": [
+    {
+      "step": 1,
+      "tool": "read_material",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "读取 M02 元数据以判断缺失字段档位与是否已在正式排期中",
+      "result": {
+        "ok": true,
+        "material": {
+          "title": "周末旅拍调色教程",
+          "account": "douyin_main",
+          "caption": "三步调出胶片感，新手也能上手",
+          "cover": "m02.jpg",
+          "tags": [
+            "教程"
+          ],
+          "music": {
+            "used": false
+          },
+          "people": {
+            "present": false
+          }
+        },
+        "missing": {},
+        "already_scheduled": null,
+        "existing_draft": null
+      },
+      "next_action": "check_rules"
+    },
+    {
+      "step": 2,
+      "tool": "check_rules",
+      "args": {
+        "material_id": "M02"
+      },
+      "reason": "元数据齐全，需对文案做规则检查以给出审核结论",
+      "result": {
+        "ok": true,
+        "hits": []
+      },
+      "next_action": "query_slots"
+    },
+    {
+      "step": 2,
+      "tool": "query_slots",
+      "args": {
+        "account": "douyin_main",
+        "date": "2026-11-03",
+        "material_id": "M02"
+      },
+      "reason": "查询目标账号当天时段占用，确认 10:00 是否可用",
+      "result": {
+        "ok": true,
+        "account": "douyin_main",
+        "slots": [
+          {
+            "slot": "2026-11-03 09:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 10:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 11:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 12:00",
+            "status": "scheduled",
+            "holder": "M08",
+            "title": "新品海报动图"
+          },
+          {
+            "slot": "2026-11-03 13:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 14:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 15:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 16:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 17:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 18:00",
+            "status": "scheduled",
+            "holder": "X21",
+            "title": "品牌联名预告"
+          },
+          {
+            "slot": "2026-11-03 19:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 20:00",
+            "status": "scheduled",
+            "holder": "X22",
+            "title": "直播切片"
+          },
+          {
+            "slot": "2026-11-03 21:00",
+            "status": "free"
+          },
+          {
+            "slot": "2026-11-03 22:00",
+            "status": "free"
+          }
+        ]
+      },
+      "next_action": "save_draft"
+    },
+    {
+      "step": 3,
+      "tool": "save_draft",
+      "args": {
+        "material_id": "M02",
+        "slot": "2026-11-03 10:00",
+        "needs_confirmation": false,
+        "note": "审核通过：文案规则检查无命中，元数据完整，无音乐/肖像授权需求。按要求排入 2026-11-03 10:00，该时段空闲，与正式排期无冲突。仅保存草稿，未发布。"
+      },
+      "reason": "规则无命中且目标时段空闲、与请求一致，直接保存草稿占位",
+      "result": {
+        "ok": true,
+        "status": "saved",
+        "draft_id": "D-M02",
+        "version": 1,
+        "slot": "2026-11-03 10:00",
+        "draft_status": "draft"
+      },
+      "next_action": "finish"
+    },
+    {
+      "step": 4,
+      "tool": "finish",
+      "args": {
+        "summary": "M02（周末旅拍调色教程，douyin_main）审核结论：通过。元数据完整无缺失；music.used=false、people.present=false，无需补查音乐或肖像授权；文案规则检查无命中。排期：已按要求保存草稿，时段 2026-11-03 10:00（该时段空闲，无冲突），draft_id=D-M02，状态=draft。注意：仅为草稿，未发布；该时段同日 12:00/18:00/20:00 已被 M08/X21/X22 正式占用，本素材不受影响。保存结果以 save_draft 返回为准，已成功。"
+      },
+      "reason": "M02 已有明确结论（草稿保存成功），本次任务请求项全部处理完毕",
+      "result": {
+        "ok": true
+      },
+      "next_action": "(end)"
+    }
+  ],
+  "policy": "llm:deepseek-flash"
+}

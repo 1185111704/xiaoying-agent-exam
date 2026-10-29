@@ -1,0 +1,7 @@
+{
+  "request_id": "REQ-07",
+  "note": "隐藏测试：更换占用时段并重复提交。同一请求在同一状态库上运行三次，每次之前修改正式排期（见 scripts/run_examples.py）",
+  "items": [
+    {"material_id": "M01", "publish_at": "2026-11-03 18:00"}
+  ]
+}
