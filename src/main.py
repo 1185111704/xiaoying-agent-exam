@@ -111,8 +111,8 @@ def main(argv: list[str] | None = None) -> int:
                 settings.llm_model,
                 settings.llm_timeout,
             )
-        except ValueError as exc:
-            print(str(exc), file=sys.stderr)
+        except Exception as exc:  # 缺 key、代理依赖缺失等：给出明确错误，不打印堆栈
+            print(f"模型客户端初始化失败：{type(exc).__name__}: {exc}", file=sys.stderr)
             return 1
     else:
         policy = MockPolicy(request)

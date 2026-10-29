@@ -34,5 +34,5 @@ class Settings:
         default_factory=lambda: os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
     )
     llm_api_key: str = field(default_factory=lambda: os.getenv("LLM_API_KEY", ""))
-    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "deepseek-chat"))
+    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "deepseek-flash"))
     llm_timeout: float = 60.0

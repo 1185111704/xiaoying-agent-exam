@@ -63,7 +63,13 @@ def test_tool_limit_stops_before_next_model_call(make_box):
 def test_published_claim_always_flagged(make_box):
     box = make_box(REQ)
     run = run_agent(
-        ScriptedPolicy([[("finish", {"summary": "M01 未发布；M02 已发布", "reason": "r"})]]), box
+        ScriptedPolicy(
+            [
+                [("block", {"material_id": "M02", "reason_code": "X", "reason": "r"})],
+                [("finish", {"summary": "M01 未发布；M02 已发布", "reason": "r"})],
+            ]
+        ),
+        box,
     )
     assert build_report(REQ, box, run)["consistency_warnings"]
 
