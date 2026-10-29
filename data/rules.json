@@ -1,0 +1,12 @@
+{
+  "slot_minutes": 60,
+  "publish_hours": [9, 22],
+  "fields": {
+    "reject": {"account": "缺少发布账号，无法排期", "caption": "缺少文案，无法审核"},
+    "lookup": {"music.license_id": "音乐授权（music.used=true 时必需）", "people.portrait_release_id": "肖像授权（people.present=true 时必需）"},
+    "todo": {"cover": "缺少封面", "tags": "缺少标签"}
+  },
+  "terms": [
+    {"rule": "AD-01", "desc": "广告法极限用语", "severity": "block", "words": ["最强", "第一", "全网最", "100%", "绝对", "顶级"]}
+  ]
+}
