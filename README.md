@@ -73,7 +73,7 @@ src/
   policies.py      真实模型（OpenAI 兼容）与脚本化假模型
   mock_policy.py   离线 Mock
   main.py          CLI 与输入校验
-tests/             75 项测试（守卫、幂等、并发、失败回滚、报告来源、健壮性）
+tests/             77 项测试（守卫、幂等、并发、失败回滚、报告来源、健壮性）
 examples/          8 个用例的输入、真实模型与 Mock 输出、汇总、测试结果
 data/              合成素材、正式排期、版权库、审核规则
 scripts/           run_examples.py

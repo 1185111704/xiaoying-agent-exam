@@ -474,10 +474,15 @@ class ToolBox:
         return {"ok": True, "blocked": material_id, "draft_cancelled": cancelled}
 
     def _unresolved(self) -> list[str]:
-        """还没有结论的素材：本次运行未保存成功/未阻断/未请求确认/未保存失败，且库中也无有效草稿。"""
-        pending = []
-        for mid in self.items:
-            done = any(
+        """还没有结论的素材：本次运行没有成功保存（含未变化）/阻断/请求确认/保存失败。
+
+        库中上一轮留下的草稿不算本轮结论：素材数据可能已变化，必须在本轮重新审核；
+        重新保存会再过一遍保存守卫（含本轮规则检查），保存结果为 unchanged 时不产生写入。
+        """
+        return [
+            mid
+            for mid in self.items
+            if not any(
                 (e.tool in ("block", "request_confirmation") and e.result.get("ok"))
                 or (
                     e.tool == "save_draft"
@@ -485,15 +490,7 @@ class ToolBox:
                 )
                 for e in self.ledger.for_material(mid)
             )
-            state = self.store.draft_state(mid)
-            active = bool(
-                state
-                and state["holds_slot"]
-                and state["status"] in ("draft", "pending_confirmation", "confirmed")
-            )
-            if not done and not active:
-                pending.append(mid)
-        return pending
+        ]
 
     def _finish(self, summary: str) -> dict:
         if unresolved := self._unresolved():
