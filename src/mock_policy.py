@@ -18,6 +18,11 @@ def _last_result(messages: list[dict]) -> dict | None:
     return None
 
 
+def _nearest(slots: list[str], want: str, k: int = 3) -> list[str]:
+    hour = int(want[11:13])
+    return sorted(slots, key=lambda s: (abs(int(s[11:13]) - hour), s))[:k]
+
+
 class MockPolicy:
     def __init__(self, request: dict):
         self.items = list(request["items"])
@@ -173,7 +178,7 @@ class MockPolicy:
                 "material_id": mid,
                 "question": f"要求时段 {want} 不可用"
                 + ("（硬性要求，不能擅自调整）" if item.get("fixed") else "，窗口内无空位"),
-                "options": [f"改到 {s}" for s in free[:3]] + ["取消本次排期"],
+                "options": [f"改到 {s}" for s in _nearest(free, want)] + ["取消本次排期"],
                 "reason": f"不能擅自改动；占用情况：{json.dumps(occupied, ensure_ascii=False)}",
             }
         else:

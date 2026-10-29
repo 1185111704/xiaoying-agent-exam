@@ -249,8 +249,31 @@ class ToolBox:
     def _lookup_license(self, material_id: str, kind: str) -> dict:
         return {"ok": True, "status": "not_found"}
 
+    def _rule_hits(self, material: dict) -> list[dict]:
+        text = " ".join(str(material.get(k) or "") for k in ("title", "caption"))
+        hits = []
+        for rule in self.rules["terms"]:
+            for word in rule["words"]:
+                pos = text.find(word)
+                if pos >= 0:
+                    hits.append(
+                        {
+                            "rule": rule["rule"],
+                            "desc": rule["desc"],
+                            "severity": rule["severity"],
+                            "evidence": text[max(0, pos - 8) : pos + len(word) + 8],
+                            "matched": word,
+                        }
+                    )
+        return hits
+
     def _check_rules(self, material_id: str) -> dict:
-        return {"ok": True, "hits": []}
+        if err := self._not_in_request(material_id):
+            return err
+        m = self.materials.get(material_id)
+        if m is None:
+            return {"ok": False, "error": "MATERIAL_NOT_FOUND", "detail": "素材库中不存在"}
+        return {"ok": True, "hits": self._rule_hits(m)}
 
     def _query_slots(self, account: str, date: str, material_id: str) -> dict:
         try:
@@ -291,16 +314,124 @@ class ToolBox:
             }
         if err := self._slot_error(slot):
             return {"ok": False, "status": "rejected", "error": "INVALID_SLOT", "detail": err}
+        if rejection := self._guard_save(material_id, slot, needs_confirmation):
+            return {"ok": False, "status": "rejected", **rejection}
         status = "pending_confirmation" if needs_confirmation else "draft"
-        return self.store.save_draft(
+        context = self._occupancy_context(material_id) if needs_confirmation else None
+        result = self.store.save_draft(
             material_id, account, slot, status, note, self.request.get("request_id")
         )
+        if result.get("ok") and context:
+            result["context"] = context
+        return result
+
+    def _guard_save(self, material_id: str, slot: str, needs_confirmation: bool) -> dict | None:
+        """保存守卫：只做否决，返回拒绝原因交还模型；不替模型选择下一步。
+
+        判定全部基于客观事实（素材数据、规则、请求、本次运行中已发生的工具调用）。
+        """
+        item = self.items[material_id]
+        m = self.materials.get(material_id)
+        if m is None:
+            return {"error": "MATERIAL_NOT_FOUND", "detail": "素材库中不存在，不能排期"}
+        if any(e["material_id"] == material_id for e in self.schedule):
+            return {"error": "ALREADY_SCHEDULED", "detail": "素材已在正式排期中，属于重复提交"}
+        if self.ledger.for_material(material_id, "block"):
+            return {"error": "BLOCKED", "detail": "素材已被阻断，不能再排期"}
+
+        missing = self._read_material(material_id)["missing"]
+        if missing.get("reject"):
+            return {"error": "FIELD_MISSING", "detail": f"缺少必需字段 {list(missing['reject'])}"}
+        verified = {
+            e.args.get("kind")
+            for e in self.ledger.for_material(material_id, "lookup_license")
+            if e.result.get("status") == "found"
+        }
+        unverified = [
+            f
+            for f in missing.get("lookup", {})
+            if ("music" if f.startswith("music") else "portrait") not in verified
+        ]
+        if unverified:
+            return {
+                "error": "LICENSE_UNVERIFIED",
+                "detail": f"授权未核实 {unverified}，需先用 lookup_license 补查",
+            }
+        if not self.ledger.for_material(material_id, "check_rules"):
+            return {"error": "NOT_CHECKED", "detail": "尚未做规则检查（check_rules）"}
+        blocking = [h for h in self._rule_hits(m) if h["severity"] == "block"]
+        if blocking:
+            return {
+                "error": "RULE_BLOCKED",
+                "detail": f"命中阻断级规则 {blocking[0]['rule']}：{blocking[0]['evidence']}",
+            }
+
+        requested = item["publish_at"]
+        changed = slot != requested
+        if changed and item.get("fixed"):
+            return {
+                "error": "FIXED_REQUIREMENT",
+                "detail": f"{requested} 是硬性要求，未经用户确认不得改动；"
+                "请用 request_confirmation 交用户决定",
+            }
+        window = item.get("window")
+        if window and not window[0] <= slot <= window[1]:
+            return {
+                "error": "OUTSIDE_WINDOW",
+                "detail": f"{slot} 超出用户给定窗口 {window[0]} – {window[1]}，未经确认不得改动",
+            }
+        if changed and not needs_confirmation:
+            return {
+                "error": "CONFIRMATION_REQUIRED",
+                "detail": f"时段 {slot} 与要求 {requested} 不同，必须设置 needs_confirmation=true",
+            }
+        if not changed and needs_confirmation:
+            return {
+                "error": "CONFIRMATION_MISMATCH",
+                "detail": "时段与要求一致，无需标记时段确认；其他待确认事项请用 request_confirmation",
+            }
+        return None
+
+    def _occupancy_context(self, material_id: str) -> dict | None:
+        """要求时段所在账号当天的占用清单 + 离要求时间最近的空闲时段（客观事实，由程序附上）。"""
+        account = self._account(material_id)
+        requested = self.items[material_id]["publish_at"]
+        if not account or self._slot_error(requested):
+            return None
+        slots = self._query_slots(account, requested[:10], material_id)["slots"]
+        occupied = [
+            {
+                "slot": s["slot"],
+                "by": s["holder"],
+                "title": s.get("title"),
+                "kind": "正式排期" if s["status"] == "scheduled" else "其他草稿",
+            }
+            for s in slots
+            if s["status"] != "free"
+        ]
+        free = [s["slot"] for s in slots if s["status"] == "free" and s["slot"] != requested]
+        hour = int(requested[11:13])
+        nearest = sorted(free, key=lambda s: (abs(int(s[11:13]) - hour), s))[:3]
+        requested_by = next((o for o in occupied if o["slot"] == requested), None)
+        return {
+            "account": account,
+            "requested_slot": requested,
+            "requested_slot_occupied_by": requested_by,
+            "occupied": occupied,
+            "nearest_free": nearest,
+        }
 
     def _request_confirmation(
         self, material_id: str, question: str, options: list[str] | None = None
     ) -> dict:
+        if err := self._not_in_request(material_id):
+            return err
         n = len([e for e in self.ledger.entries if e.tool == "request_confirmation"]) + 1
-        return {"ok": True, "confirmation_id": f"C{n}"}
+        return {
+            "ok": True,
+            "confirmation_id": f"C{n}",
+            "context": self._occupancy_context(material_id),
+        }
 
     def _block(self, material_id: str, reason_code: str, evidence: str = "") -> dict:
         if err := self._not_in_request(material_id):
