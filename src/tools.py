@@ -394,6 +394,12 @@ class ToolBox:
                 "请用 request_confirmation 交用户决定",
             }
         window = item.get("window")
+        if not window and slot < requested:
+            return {
+                "error": "EARLIER_THAN_REQUESTED",
+                "detail": f"{slot} 早于要求 {requested}；提前发布可能违反活动或保密时间，"
+                "只能顺延，或请求用户确认（用户可在请求中给出允许提前的 window）",
+            }
         if window and not window[0] <= slot <= window[1]:
             return {
                 "error": "OUTSIDE_WINDOW",
@@ -428,8 +434,15 @@ class ToolBox:
             for s in slots
             if s["status"] != "free"
         ]
-        free = [s["slot"] for s in slots if s["status"] == "free" and s["slot"] != requested]
+        window = self.items[material_id].get("window")
+        lo, hi = window if window else (requested, f"{requested[:10]} 23:59")
+        free = [
+            s["slot"]
+            for s in slots
+            if s["status"] == "free" and s["slot"] != requested and lo <= s["slot"] <= hi
+        ]
         hour = int(requested[11:13])
+        # 可用候选（守卫会放行的）由近到远；距离相同按时间先后
         nearest = sorted(free, key=lambda s: (abs(int(s[11:13]) - hour), s))[:3]
         requested_by = next((o for o in occupied if o["slot"] == requested), None)
         return {
@@ -460,6 +473,35 @@ class ToolBox:
         cancelled = self.store.cancel_draft(material_id, account) if account else None
         return {"ok": True, "blocked": material_id, "draft_cancelled": cancelled}
 
+    def _unresolved(self) -> list[str]:
+        """还没有结论的素材：本次运行未保存成功/未阻断/未请求确认/未保存失败，且库中也无有效草稿。"""
+        pending = []
+        for mid in self.items:
+            done = any(
+                (e.tool in ("block", "request_confirmation") and e.result.get("ok"))
+                or (
+                    e.tool == "save_draft"
+                    and e.result.get("status") in ("saved", "unchanged", "updated", "failed")
+                )
+                for e in self.ledger.for_material(mid)
+            )
+            state = self.store.draft_state(mid)
+            active = bool(
+                state
+                and state["holds_slot"]
+                and state["status"] in ("draft", "pending_confirmation", "confirmed")
+            )
+            if not done and not active:
+                pending.append(mid)
+        return pending
+
     def _finish(self, summary: str) -> dict:
+        if unresolved := self._unresolved():
+            return {
+                "ok": False,
+                "error": "UNRESOLVED_ITEMS",
+                "detail": "以下素材还没有结论（保存草稿 / 阻断 / 请求确认 / 保存失败），不能结束",
+                "unresolved": unresolved,
+            }
         self.finished = True
         return {"ok": True}

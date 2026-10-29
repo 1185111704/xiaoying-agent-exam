@@ -123,9 +123,9 @@ def test_confirmation_carries_occupancy(tmp_path, capsys):
     held = {o["slot"][-5:]: o for o in ctx["occupied"]}
     assert held["19:00"]["by"] == "M01" and held["19:00"]["kind"] == "其他草稿"
     assert held["20:00"]["kind"] == "正式排期"
-    # 由近到远；距离相同（15:00 与 21:00）按时间先后
-    assert [s[-5:] for s in ctx["nearest_free"]] == ["17:00", "16:00", "15:00"]
-    assert "17:00" in m07["pending_confirmations"][0]["options"][0]
+    # 只列守卫会放行的候选：不早于 18:00；19:00 被 M01 占、20:00 正式排期
+    assert [s[-5:] for s in ctx["nearest_free"]] == ["21:00", "22:00"]
+    assert "21:00" in m07["pending_confirmations"][0]["options"][0]
 
     m01_ctx = m01["pending_confirmations"][0]["context"]
     assert m01_ctx["requested_slot_occupied_by"]["title"] == "品牌联名预告"

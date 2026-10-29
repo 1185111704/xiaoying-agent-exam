@@ -167,7 +167,7 @@ class MockPolicy:
             for s in obs.get("slots", [])
             if s["status"] == "free" and s["slot"] not in taken
         ]
-        lo, hi = item.get("window") or (want[:10] + " 00:00", want[:10] + " 23:59")
+        lo, hi = item.get("window") or (want, want[:10] + " 23:59")  # 未给窗口：不得提前
         in_window = [s for s in free if lo <= s <= hi]
         if want in in_window:
             slot, confirm = want, False
@@ -178,7 +178,8 @@ class MockPolicy:
                 "material_id": mid,
                 "question": f"要求时段 {want} 不可用"
                 + ("（硬性要求，不能擅自调整）" if item.get("fixed") else "，窗口内无空位"),
-                "options": [f"改到 {s}" for s in _nearest(free, want)] + ["取消本次排期"],
+                "options": [f"改到 {s}" for s in _nearest([s for s in free if lo <= s <= hi], want)]
+                + ["取消本次排期"],
                 "reason": f"不能擅自改动；占用情况：{json.dumps(occupied, ensure_ascii=False)}",
             }
         else:

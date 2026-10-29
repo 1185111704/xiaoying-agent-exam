@@ -83,6 +83,7 @@ def test_finish_not_last_is_rejected_and_rest_runs(make_box):
             ("finish", {"summary": "s", "reason": "r"}),
             ("check_rules", {"material_id": "M02", "reason": "r"}),
         ],
+        [("block", {"material_id": "M02", "reason_code": "X", "reason": "r"})],
         [("finish", {"summary": "s2", "reason": "r"})],
     ]
     run = run_agent(ScriptedPolicy(script), box)
