@@ -239,11 +239,15 @@ class ToolBox:
             "todo": {k: v for k, v in fields["todo"].items() if not _get(m, k)},
         }
         scheduled = [e for e in self.schedule if e["material_id"] == material_id]
+        draft = self.store.get_draft(material_id, m["account"]) if m.get("account") else None
         return {
             "ok": True,
             "material": m,
             "missing": {k: v for k, v in missing.items() if v},
             "already_scheduled": scheduled or None,
+            "existing_draft": {k: draft[k] for k in ("draft_id", "slot", "status", "version")}
+            if draft
+            else None,
         }
 
     def _lookup_license(self, material_id: str, kind: str) -> dict:

@@ -159,6 +159,26 @@ class Store:
         draft_id = f"D-{material_id}"
         try:
             with self._tx() as conn:
+                existing = conn.execute(
+                    "SELECT * FROM drafts WHERE material_id = ? AND account = ?",
+                    (material_id, account),
+                ).fetchone()
+                # 幂等：同一素材、同一时段、同一状态且占位仍在 → 不写入，返回原草稿
+                if existing and existing["slot"] == slot and existing["status"] == status:
+                    held = conn.execute(
+                        "SELECT 1 FROM slots WHERE account = ? AND slot = ? AND kind = 'draft' "
+                        "AND material_id = ?",
+                        (account, slot, material_id),
+                    ).fetchone()
+                    if held:
+                        return {
+                            "ok": True,
+                            "status": "unchanged",
+                            "draft_id": existing["draft_id"],
+                            "version": existing["version"],
+                            "slot": slot,
+                            "draft_status": status,
+                        }
                 conn.execute(
                     "DELETE FROM slots WHERE kind = 'draft' AND material_id = ? AND account = ?",
                     (material_id, account),
@@ -192,7 +212,7 @@ class Store:
             return {"ok": False, "status": "conflict", "slot": slot, "holder": c.holder}
         except sqlite3.OperationalError as exc:  # 锁等待超时等存储错误：失败，绝不报成功
             return {"ok": False, "status": "failed", "error": "STORAGE_ERROR", "detail": str(exc)}
-        return {
+        result = {
             "ok": True,
             "status": "saved" if version == 1 else "updated",
             "draft_id": draft_id,
@@ -200,6 +220,9 @@ class Store:
             "slot": slot,
             "draft_status": status,
         }
+        if existing and version > 1:
+            result["previous"] = {"slot": existing["slot"], "status": existing["status"]}
+        return result
 
 
 class _Conflict(Exception):

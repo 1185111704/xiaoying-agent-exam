@@ -60,7 +60,7 @@ def _review(ledger: Ledger, mid: str) -> tuple[str, list[dict]]:
     return "passed", reasons
 
 
-def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
+def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str, Any]:
     mid = item["material_id"]
     review_status, reasons = _review(ledger, mid)
     saves = ledger.for_material(mid, "save_draft")
@@ -99,6 +99,11 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
     else:
         outcome = "unresolved"
 
+    notices = [
+        f"上次草稿占用的 {d['slot']} 已被正式排期占用，本次重新安排"
+        for d in displaced
+        if d.get("material_id") == mid
+    ]
     draft_src = good or last_save
     cancelled = blocked.result.get("draft_cancelled") if blocked else None
     if cancelled:
@@ -116,6 +121,8 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
             "draft_id": good.result.get("draft_id") if good else None,
             "version": good.result.get("version") if good else None,
         }
+        if good and good.result.get("previous"):
+            draft["previous"] = good.result["previous"]
     return {
         "material_id": mid,
         "review_status": review_status,
@@ -132,12 +139,15 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
         if blocked
         else None,
         "outcome": outcome,
+        "notices": notices,
         "publish_status": "not_published",
     }
 
 
-def build_report(request: dict, ledger: Ledger, run: RunResult) -> dict[str, Any]:
-    items = [_item_report(ledger, it) for it in request["items"]]
+def build_report(
+    request: dict, ledger: Ledger, run: RunResult, displaced: list[dict] | None = None
+) -> dict[str, Any]:
+    items = [_item_report(ledger, it, displaced or []) for it in request["items"]]
     outcomes = {i["outcome"] for i in items}
 
     if run.status == "error":
