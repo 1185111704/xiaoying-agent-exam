@@ -170,6 +170,7 @@ class ToolBox:
         self.materials = _load(data_dir, "materials.json")
         self.rules = _load(data_dir, "rules.json")
         self.schedule = _load(data_dir, "schedule.json")
+        self.rights = _load(data_dir, "rights.json")
         self.store = store
         # 启动时把正式排期同步进占位表；被挤掉的草稿在报告中提示
         self.displaced = store.sync_schedule(self.schedule)
@@ -253,7 +254,16 @@ class ToolBox:
         }
 
     def _lookup_license(self, material_id: str, kind: str) -> dict:
-        return {"ok": True, "status": "not_found"}
+        if err := self._not_in_request(material_id):
+            return err
+        record = self.rights.get(kind, {}).get(material_id)
+        if record is None:
+            return {"ok": True, "status": "not_found", "kind": kind}
+        # 授权须覆盖要求的发布日期，否则视为过期（客观可判定）
+        publish_date = self.items[material_id]["publish_at"][:10]
+        if record.get("valid_until") and record["valid_until"] < publish_date:
+            return {"ok": True, "status": "expired", "kind": kind, "record": record}
+        return {"ok": True, "status": "found", "kind": kind, "record": record}
 
     def _rule_hits(self, material: dict) -> list[dict]:
         text = " ".join(str(material.get(k) or "") for k in ("title", "caption"))
