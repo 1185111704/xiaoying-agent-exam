@@ -77,7 +77,8 @@ def _item_report(ledger: Ledger, item: dict) -> dict[str, Any]:
         }
         for e in confirms
     ]
-    if good and good.args.get("needs_confirmation"):
+    # 时段是否改动由程序比较得出，不采信模型自报的 needs_confirmation（骨架审查 #3）
+    if good and not blocked and good.args["slot"] != item.get("publish_at"):
         pending.append(
             {
                 "confirmation_id": None,

@@ -15,6 +15,13 @@ def call(box, tool, **args):
     return box.call(1, tool, {**args, "reason": "test"})
 
 
+def checked(box, *mids):
+    """保存守卫要求先做规则检查（切片 2）。"""
+    for mid in mids:
+        call(box, "check_rules", material_id=mid)
+    return box
+
+
 def test_read_material_missing_tiers(make_box):
     box = make_box(req("M03", "M05", "M06", "M02"))
     m03 = call(box, "read_material", material_id="M03")["missing"]
@@ -47,7 +54,7 @@ def _slots(res):
 
 
 def test_query_slots_shows_schedule_and_holds(make_box):
-    box = make_box(req("M01", "M02"))
+    box = checked(make_box(req("M01", "M02")), "M02")
     s = _slots(
         call(box, "query_slots", account="douyin_main", date="2026-11-03", material_id="M01")
     )
@@ -71,7 +78,7 @@ def test_query_slots_shows_schedule_and_holds(make_box):
 
 
 def test_save_draft_persists_across_runs(make_box):
-    first = make_box(req("M02"))
+    first = checked(make_box(req("M02")), "M02")
     assert (
         call(
             first,
@@ -91,7 +98,7 @@ def test_save_draft_persists_across_runs(make_box):
 
 def test_save_draft_on_scheduled_slot_is_conflict(make_box):
     res = call(
-        make_box(req("M01")),
+        checked(make_box(req("M01", at="2026-11-03 18:00")), "M01"),
         "save_draft",
         material_id="M01",
         slot="2026-11-03 18:00",
@@ -116,7 +123,7 @@ def test_schedule_sync_displaces_draft(tmp_path):
     for f in Settings().data_dir.iterdir():
         (data / f.name).write_text(f.read_text())
     store = Store(tmp_path / "s.db")
-    box = ToolBox(req("M02"), data, store)
+    box = checked(ToolBox(req("M02"), data, store), "M02")
     call(box, "save_draft", material_id="M02", slot="2026-11-03 10:00", needs_confirmation=False)
 
     sched = json.loads((data / "schedule.json").read_text())
@@ -133,14 +140,15 @@ def test_block_cancels_draft_and_releases_slot(make_box):
     from src.policies import ScriptedPolicy
     from src.report import build_report
 
-    request = req("M04", "M02")
+    request = req("M02", "M01")
     box = make_box(request)
     script = [
+        [("check_rules", {"material_id": "M02", "reason": "r"})],
         [
             (
                 "save_draft",
                 {
-                    "material_id": "M04",
+                    "material_id": "M02",
                     "slot": "2026-11-03 10:00",
                     "needs_confirmation": False,
                     "reason": "r",
@@ -151,9 +159,9 @@ def test_block_cancels_draft_and_releases_slot(make_box):
             (
                 "block",
                 {
-                    "material_id": "M04",
-                    "reason_code": "AD-01",
-                    "evidence": "全网最强",
+                    "material_id": "M02",
+                    "reason_code": "DUPLICATE_CONTENT",
+                    "evidence": "运营反馈与上周内容重复",
                     "reason": "r",
                 },
             )
@@ -165,9 +173,9 @@ def test_block_cancels_draft_and_releases_slot(make_box):
     assert item["outcome"] == "blocked" and item["suggested_slot"] is None
     assert item["draft"]["status"] == "cancelled"
     assert item["draft"]["released_slot"] == "2026-11-03 10:00"
-    assert box.store.get_draft("M04", "douyin_main")["status"] == "cancelled"
+    assert box.store.get_draft("M02", "douyin_main")["status"] == "cancelled"
     s = _slots(
-        call(box, "query_slots", account="douyin_main", date="2026-11-03", material_id="M02")
+        call(box, "query_slots", account="douyin_main", date="2026-11-03", material_id="M01")
     )
     assert s["10:00"]["status"] == "free"
 
