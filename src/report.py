@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .agent import RunResult
@@ -167,8 +168,16 @@ def build_report(
         warnings.append(
             "模型总结中出现“已发布”，与系统能力不符；以本报告为准（publish_status=not_published）。"
         )
-    if "save_failed" in outcomes and ("保存成功" in text or "已保存" in text):
-        warnings.append("模型总结声称保存成功，但记录显示存在保存失败；以本报告为准。")
+    failed = [i["material_id"] for i in items if i["outcome"] == "save_failed"]
+    for clause in re.split(r"[；;。，,\n]", text):
+        claims_saved = ("保存成功" in clause or "已保存" in clause) and "失败" not in clause
+        named = [m for m in failed if m in clause]
+        # 点名了失败素材却说成功；或未点名任何素材、笼统声称成功
+        mentions_any = any(i["material_id"] in clause for i in items)
+        if claims_saved and (named or (failed and not mentions_any)):
+            warnings.append(
+                f"模型总结“{clause.strip()}”与记录不符（保存失败：{failed}）；以本报告为准。"
+            )
 
     trace = [dict(t) for t in run.trace]
     for i, t in enumerate(trace):
