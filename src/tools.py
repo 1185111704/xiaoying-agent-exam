@@ -123,18 +123,29 @@ class Ledger:
         ]
 
 
+# bool 是 int 的子类，这里只用到 string/boolean/array，不涉及 integer
+_TYPES = {"string": str, "boolean": bool, "array": list}
+
+
 def validate_args(name: str, args: dict[str, Any]) -> str | None:
     """返回错误描述；参数合法时返回 None。"""
     spec = SPEC_BY_NAME.get(name)
     if spec is None:
         return f"未知工具 {name}"
     if "__raw__" in args:
-        return "参数不是合法 JSON"
+        return "参数不是合法的 JSON 对象"
+    unknown = sorted(set(args) - set(spec["properties"]))
+    if unknown:
+        return f"未知参数 {unknown}"
     missing = [k for k in spec["required"] if k not in args or args[k] in (None, "")]
     if missing:
         return f"缺少参数 {missing}"
-    for key, prop in spec["properties"].items():
-        if key in args and "enum" in prop and args[key] not in prop["enum"]:
+    for key, value in args.items():
+        prop = spec["properties"][key]
+        expected = _TYPES.get(prop.get("type"))
+        if value is not None and expected and not isinstance(value, expected):
+            return f"参数 {key} 类型须为 {prop['type']}"
+        if "enum" in prop and value not in prop["enum"]:
             return f"参数 {key} 取值须为 {prop['enum']}"
     return None
 
@@ -148,14 +159,23 @@ class ToolBox:
         self.finished = False
 
     # ---- 分发 ----
-    def call(self, step: int, name: str, args: dict[str, Any]) -> dict[str, Any]:
-        args = dict(args)
-        reason = str(args.pop("reason", ""))
+    def call(self, step: int, name: str, args: Any) -> dict[str, Any]:
+        args = dict(args) if isinstance(args, dict) else {"__raw__": args}
+        reason = args.pop("reason", "")
         error = validate_args(name, {**args, "reason": reason or None})
         if error:
             result = {"ok": False, "error": "INVALID_ARGS", "detail": error}
         else:
-            result = getattr(self, f"_{name}")(**args)
+            try:
+                result = getattr(self, f"_{name}")(**args)
+            except Exception as exc:  # 工具内部异常：作为失败观察返回，不让整次运行崩溃
+                result = {
+                    "ok": False,
+                    "status": "failed",
+                    "error": "TOOL_ERROR",
+                    "detail": f"{type(exc).__name__}: {exc}",
+                }
+        reason = reason if isinstance(reason, str) else str(reason)
         self.ledger.entries.append(LedgerEntry(step, name, args, reason, result))
         return result
 

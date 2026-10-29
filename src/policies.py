@@ -69,7 +69,9 @@ class LLMPolicy:
             try:
                 args = json.loads(tc.function.arguments or "{}")
             except json.JSONDecodeError:
-                # 参数不是合法 JSON：交给工具层返回 INVALID_ARGS，让模型自己修正
+                args = None
+            if not isinstance(args, dict):
+                # 不是 JSON 对象：交给工具层返回 INVALID_ARGS，让模型自己修正
                 args = {"__raw__": tc.function.arguments}
             calls.append(ToolCall(tc.id, tc.function.name, args))
         return Decision(msg.content, calls, msg.model_dump(exclude_none=True))

@@ -54,6 +54,9 @@ def run_agent(
     run = RunResult(status="step_limit", steps=0, tool_calls=0)
 
     while run.steps < max_steps:
+        if run.tool_calls >= max_tool_calls:
+            run.status = "tool_limit"
+            return run
         run.steps += 1
         try:
             decision = policy.decide(messages, TOOL_SPECS)

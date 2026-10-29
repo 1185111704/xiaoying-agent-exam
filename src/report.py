@@ -140,7 +140,7 @@ def build_report(request: dict, ledger: Ledger, run: RunResult) -> dict[str, Any
 
     warnings = []
     text = run.final_message or ""
-    if "已发布" in text and "未发布" not in text:
+    if "已发布" in text:
         warnings.append(
             "模型总结中出现“已发布”，与系统能力不符；以本报告为准（publish_status=not_published）。"
         )
