@@ -45,9 +45,13 @@ def _now() -> str:
 
 
 class Store:
-    def __init__(self, db_path: Path | str, busy_timeout: float = 5.0):
+    def __init__(self, db_path: Path | str, busy_timeout: float = 5.0, fault: str | None = None):
         self.db_path = str(db_path)
         self.busy_timeout = busy_timeout
+        # 故障注入（只用于验收"保存失败"）：always=每次保存都在提交前失败；once=仅第一次失败
+        if fault not in (None, "always", "once"):
+            raise ValueError(f"未知的故障模式 {fault}")
+        self.fault = fault
         if self.db_path != ":memory:":
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as conn:
@@ -208,6 +212,10 @@ class Store:
                 version = conn.execute(
                     "SELECT version FROM drafts WHERE draft_id = ?", (draft_id,)
                 ).fetchone()[0]
+                if self.fault:
+                    # 写入已执行、提交之前失败：验证整个事务回滚，不留半成品
+                    self.fault = None if self.fault == "once" else self.fault
+                    raise sqlite3.OperationalError("injected fault: disk I/O error")
         except _Conflict as c:
             return {"ok": False, "status": "conflict", "slot": slot, "holder": c.holder}
         except sqlite3.OperationalError as exc:  # 锁等待超时等存储错误：失败，绝不报成功

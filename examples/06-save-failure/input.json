@@ -1,0 +1,7 @@
+{
+  "request_id": "REQ-06",
+  "note": "配合 --fault-save always（持续失败）或 --fault-save once（偶发失败）运行，验证保存失败如实返回、占位回滚",
+  "items": [
+    {"material_id": "M02", "publish_at": "2026-11-03 10:00"}
+  ]
+}
