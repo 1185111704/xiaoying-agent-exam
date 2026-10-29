@@ -54,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--db", type=Path, help="状态库路径（默认 runtime/state.db，跨运行保留草稿）"
     )
+    parser.add_argument("--data-dir", type=Path, help="合成数据目录（默认 data/），可替换后重跑")
     parser.add_argument("--max-steps", type=_positive_int)
     parser.add_argument("--max-tool-calls", type=_positive_int)
     args = parser.parse_args(argv)
@@ -86,9 +87,9 @@ def main(argv: list[str] | None = None) -> int:
         policy = MockPolicy(request)
 
     store = Store(args.db or settings.db_path)
-    toolbox = ToolBox(request, settings.data_dir, store)
+    toolbox = ToolBox(request, args.data_dir or settings.data_dir, store)
     run = run_agent(policy, toolbox, settings.max_steps, settings.max_tool_calls)
-    report = build_report(request, toolbox.ledger, run)
+    report = build_report(request, toolbox.ledger, run, toolbox.displaced)
     report["policy"] = args.policy if args.policy == "mock" else f"llm:{settings.llm_model}"
 
     text = json.dumps(report, ensure_ascii=False, indent=2)
