@@ -17,7 +17,8 @@ def test_persistent_failure_is_reported_truthfully(tmp_path, capsys):
     rep = json.loads(capsys.readouterr().out)
     m02 = rep["items"][0]
     assert code == 1 and rep["task_status"] == "save_failed"
-    assert m02["outcome"] == "save_failed" and m02["draft"]["status"] == "failed"
+    assert m02["outcome"] == "save_failed" and m02["draft"]["this_run"] == "failed"
+    assert m02["draft"]["status"] == "not_saved"
     assert m02["suggested_slot"] is None and m02["draft"]["draft_id"] is None
     assert Store(db).count_drafts() == 0  # 回滚：没有半成品
     assert Store(db).occupancy("douyin_main", "2026-11-03").get("2026-11-03 10:00") is None
@@ -48,7 +49,7 @@ def _run(tmp_path, fault, script):
 
     box = ToolBox(REQ, Settings().data_dir, Store(tmp_path / "s.db", fault=fault))
     run = run_agent(ScriptedPolicy(script), box)
-    return build_report(REQ, box.ledger, run)
+    return build_report(REQ, box, run)
 
 
 def test_retry_is_a_model_decision(tmp_path):

@@ -168,7 +168,7 @@ def test_block_cancels_draft_and_releases_slot(make_box):
         ],
         [("finish", {"summary": "s", "reason": "r"})],
     ]
-    rep = build_report(request, box.ledger, run_agent(ScriptedPolicy(script), box))
+    rep = build_report(request, box, run_agent(ScriptedPolicy(script), box))
     item = rep["items"][0]
     assert item["outcome"] == "blocked" and item["suggested_slot"] is None
     assert item["draft"]["status"] == "cancelled"

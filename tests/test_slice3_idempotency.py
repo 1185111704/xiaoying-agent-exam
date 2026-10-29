@@ -46,7 +46,7 @@ def test_same_request_twice_keeps_one_draft(tmp_path, capsys):
     _, first = run(capsys, DUP, "--db", db)
     _, second = run(capsys, DUP, "--db", db)
     a, b = item(first, "M01"), item(second, "M01")
-    assert a["draft"]["status"] == "saved" and b["draft"]["status"] == "unchanged"
+    assert a["draft"]["this_run"] == "saved" and b["draft"]["this_run"] == "unchanged"
     assert a["draft"]["draft_id"] == b["draft"]["draft_id"] and b["draft"]["version"] == 1
     assert Store(db).count_drafts() == 1
 
@@ -83,7 +83,7 @@ def test_alternative_slot_taken_then_resubmit(tmp_path, data, capsys):
     _, second = run(capsys, CONFLICT, "--db", db, "--data-dir", data)
     m01 = item(second, "M01")
     assert m01["suggested_slot"] == "2026-11-03 21:00"
-    assert m01["draft"]["status"] == "updated" and m01["draft"]["version"] == 2
+    assert m01["draft"]["this_run"] == "updated" and m01["draft"]["version"] == 2
     assert m01["draft"]["draft_id"] == item(first, "M01")["draft"]["draft_id"]
     assert m01["notices"] and "19:00" in m01["notices"][0]
     assert m01["pending_confirmations"]

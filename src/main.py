@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     store = Store(args.db or settings.db_path, fault=args.fault_save)
     toolbox = ToolBox(request, args.data_dir or settings.data_dir, store)
     run = run_agent(policy, toolbox, settings.max_steps, settings.max_tool_calls)
-    report = build_report(request, toolbox.ledger, run, toolbox.displaced)
+    report = build_report(request, toolbox, run)
     report["policy"] = args.policy if args.policy == "mock" else f"llm:{settings.llm_model}"
 
     text = json.dumps(report, ensure_ascii=False, indent=2)

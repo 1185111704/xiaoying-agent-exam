@@ -85,6 +85,8 @@ def test_report_ignores_model_flag(make_box):
     """骨架审查 #3：即使记录里模型声称无需确认，只要时段改了，报告就列为待确认。"""
     request = req([M01_18])
     box = make_box(request)
+    # 模拟守卫被绕过：库里存的是普通草稿（未标确认），记录里模型也声称无需确认
+    box.store.save_draft("M01", "douyin_main", "2026-11-03 19:00", "draft")
     box.ledger.entries.append(
         LedgerEntry(
             1,
@@ -94,7 +96,7 @@ def test_report_ignores_model_flag(make_box):
             {"ok": True, "status": "saved", "draft_id": "D-M01", "version": 1},
         )
     )
-    rep = build_report(request, box.ledger, RunResult("finished", 1, 1))
+    rep = build_report(request, box, RunResult("finished", 1, 1))
     assert rep["items"][0]["outcome"] == "draft_saved_pending_confirmation"
     assert rep["task_status"] == "needs_confirmation"
 

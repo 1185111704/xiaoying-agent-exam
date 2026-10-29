@@ -121,6 +121,21 @@ class Store:
             ).fetchone()
         return dict(row) if row else None
 
+    def draft_state(self, material_id: str) -> dict | None:
+        """素材草稿在库中的最终状态，以及它是否仍占着时段。报告以此为准。"""
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT draft_id, account, slot, status, version FROM drafts WHERE material_id = ?",
+                (material_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            held = conn.execute(
+                "SELECT 1 FROM slots WHERE kind = 'draft' AND material_id = ? AND slot = ?",
+                (material_id, row["slot"]),
+            ).fetchone()
+        return {**dict(row), "holds_slot": held is not None}
+
     def count_drafts(self) -> int:
         with self._conn() as conn:
             return conn.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]

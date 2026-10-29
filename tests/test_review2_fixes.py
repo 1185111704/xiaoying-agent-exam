@@ -106,6 +106,7 @@ def _report_with_summary(make_box, summary, failed=("M02",), saved=("M01",)):
     from src.tools import LedgerEntry
 
     for mid in saved:
+        box.store.save_draft(mid, "douyin_main", "2026-11-03 18:00", "draft")
         box.ledger.entries.append(
             LedgerEntry(
                 1,
@@ -126,7 +127,7 @@ def _report_with_summary(make_box, summary, failed=("M02",), saved=("M01",)):
             )
         )
     run = RunResult("finished", 1, 1, final_message=summary)
-    return build_report(request, box.ledger, run)["consistency_warnings"]
+    return build_report(request, box, run)["consistency_warnings"]
 
 
 def test_correct_multi_item_summary_not_flagged(make_box):
@@ -155,3 +156,28 @@ def test_request_validation(tmp_path, items):
     path.write_text(json.dumps({"items": items}))
     with pytest.raises(ValueError):
         load_request(path)
+
+
+def test_report_reads_draft_from_database_across_runs(make_box):
+    """④：上一次运行存的草稿仍在库中；本次模型只请求确认，报告仍如实显示草稿与占位。"""
+    request = req(M01)
+    first = make_box(request)
+    call(first, "check_rules", material_id="M01")
+    call(first, "save_draft", material_id="M01", slot="2026-11-03 19:00", needs_confirmation=True)
+
+    second = make_box(request)  # 同一状态库的新一次运行
+    script = [
+        [
+            (
+                "request_confirmation",
+                {"material_id": "M01", "question": "是否接受 19:00？", "reason": "r"},
+            )
+        ],
+        [("finish", {"summary": "s", "reason": "r"})],
+    ]
+    rep = build_report(request, second, run_agent(ScriptedPolicy(script), second))
+    m01 = rep["items"][0]
+    assert m01["draft"]["status"] == "pending_confirmation"
+    assert m01["draft"]["slot"] == "2026-11-03 19:00" and m01["draft"]["this_run"] == "none"
+    assert m01["suggested_slot"] == "2026-11-03 19:00"
+    assert m01["outcome"] == "draft_saved_pending_confirmation"
