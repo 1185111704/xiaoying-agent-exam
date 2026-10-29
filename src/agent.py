@@ -80,19 +80,31 @@ def run_agent(
             )
             continue
 
-        for call in decision.tool_calls:
+        calls = decision.tool_calls
+        for idx, call in enumerate(calls):
             if run.tool_calls >= max_tool_calls:
                 run.status = "tool_limit"
                 return run
             run.tool_calls += 1
-            result = toolbox.call(run.steps, call.name, call.arguments)
-            entry = toolbox.ledger.entries[-1]
+            if call.name == "finish" and idx < len(calls) - 1:
+                # 同一轮里 finish 后面还有调用：不结束，避免静默丢弃后续调用
+                args = call.arguments if isinstance(call.arguments, dict) else {}
+                result = {
+                    "ok": False,
+                    "error": "FINISH_NOT_LAST",
+                    "detail": "finish 须在本轮最后调用；本轮其余调用照常执行，请确认结果后再结束",
+                }
+                args, reason = {k: v for k, v in args.items() if k != "reason"}, args.get("reason")
+            else:
+                result = toolbox.call(run.steps, call.name, call.arguments)
+                entry = toolbox.ledger.entries[-1]
+                args, reason = entry.args, entry.reason
             run.trace.append(
                 {
                     "step": run.steps,
                     "tool": call.name,
-                    "args": entry.args,
-                    "reason": entry.reason,
+                    "args": args,
+                    "reason": reason,
                     "result": _compact(result),
                 }
             )
@@ -105,6 +117,6 @@ def run_agent(
             )
             if call.name == "finish" and result.get("ok"):
                 run.status = "finished"
-                run.final_message = entry.args.get("summary")
+                run.final_message = args.get("summary")
                 return run
     return run

@@ -215,6 +215,8 @@ class ToolBox:
             t = datetime.strptime(slot, "%Y-%m-%d %H:%M")
         except ValueError:
             return "时段格式须为 YYYY-MM-DD HH:MM"
+        if t.strftime("%Y-%m-%d %H:%M") != slot:  # strptime 接受不补零写法，会绕过主键冲突
+            return "时段须为补零的标准写法 YYYY-MM-DD HH:MM，如 2026-11-03 09:00"
         lo, hi = self.rules["publish_hours"]
         if t.minute != 0 or not lo <= t.hour <= hi:
             return f"时段须为整点，且在 {lo:02d}:00–{hi:02d}:00 之间"
@@ -281,9 +283,10 @@ class ToolBox:
 
     def _query_slots(self, account: str, date: str, material_id: str) -> dict:
         try:
-            datetime.strptime(date, "%Y-%m-%d")
+            if datetime.strptime(date, "%Y-%m-%d").strftime("%Y-%m-%d") != date:
+                raise ValueError
         except ValueError:
-            return {"ok": False, "error": "INVALID_ARGS", "detail": "date 格式须为 YYYY-MM-DD"}
+            return {"ok": False, "error": "INVALID_ARGS", "detail": "date 须为补零的 YYYY-MM-DD"}
         occupied = self.store.occupancy(account, date)
         lo, hi = self.rules["publish_hours"]
         slots = []
@@ -340,7 +343,7 @@ class ToolBox:
             return {"error": "MATERIAL_NOT_FOUND", "detail": "素材库中不存在，不能排期"}
         if any(e["material_id"] == material_id for e in self.schedule):
             return {"error": "ALREADY_SCHEDULED", "detail": "素材已在正式排期中，属于重复提交"}
-        if self.ledger.for_material(material_id, "block"):
+        if any(e.result.get("ok") for e in self.ledger.for_material(material_id, "block")):
             return {"error": "BLOCKED", "detail": "素材已被阻断，不能再排期"}
 
         missing = self._read_material(material_id)["missing"]
@@ -361,7 +364,9 @@ class ToolBox:
                 "error": "LICENSE_UNVERIFIED",
                 "detail": f"授权未核实 {unverified}，需先用 lookup_license 补查",
             }
-        if not self.ledger.for_material(material_id, "check_rules"):
+        if not any(
+            e.result.get("ok") for e in self.ledger.for_material(material_id, "check_rules")
+        ):
             return {"error": "NOT_CHECKED", "detail": "尚未做规则检查（check_rules）"}
         blocking = [h for h in self._rule_hits(m) if h["severity"] == "block"]
         if blocking:

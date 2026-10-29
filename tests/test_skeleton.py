@@ -10,7 +10,7 @@ REQ = {"request_id": "T", "items": [{"material_id": "M02", "publish_at": "2026-1
 def _run(make_box, script, **limits):
     box = make_box(REQ)
     run = run_agent(ScriptedPolicy(script), box, **limits)
-    return build_report(REQ, box.ledger, run)
+    return build_report(REQ, box, run)
 
 
 def r(**kw):

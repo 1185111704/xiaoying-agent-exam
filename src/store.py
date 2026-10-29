@@ -75,7 +75,8 @@ class Store:
                 yield conn
                 conn.execute("COMMIT")
             except BaseException:
-                conn.execute("ROLLBACK")
+                if conn.in_transaction:
+                    conn.execute("ROLLBACK")
                 raise
 
     # ---- 正式排期同步 ----
@@ -120,6 +121,21 @@ class Store:
             ).fetchone()
         return dict(row) if row else None
 
+    def draft_state(self, material_id: str) -> dict | None:
+        """素材草稿在库中的最终状态，以及它是否仍占着时段。报告以此为准。"""
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT draft_id, account, slot, status, version FROM drafts WHERE material_id = ?",
+                (material_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            held = conn.execute(
+                "SELECT 1 FROM slots WHERE kind = 'draft' AND material_id = ? AND slot = ?",
+                (material_id, row["slot"]),
+            ).fetchone()
+        return {**dict(row), "holds_slot": held is not None}
+
     def count_drafts(self) -> int:
         with self._conn() as conn:
             return conn.execute("SELECT COUNT(*) FROM drafts").fetchone()[0]
@@ -129,16 +145,14 @@ class Store:
         """撤销素材的活动草稿并释放时段（同一事务）。没有活动草稿时返回 None。"""
         with self._tx() as conn:
             row = conn.execute(
-                "SELECT * FROM drafts WHERE material_id = ? AND account = ? "
-                "AND status != 'cancelled'",
-                (material_id, account),
+                "SELECT * FROM drafts WHERE material_id = ? AND status != 'cancelled'",
+                (material_id,),
             ).fetchone()
             if row is None:
                 return None
-            conn.execute(
-                "DELETE FROM slots WHERE kind = 'draft' AND material_id = ? AND account = ?",
-                (material_id, account),
-            )
+            released = conn.execute(
+                "DELETE FROM slots WHERE kind = 'draft' AND material_id = ?", (material_id,)
+            ).rowcount
             conn.execute(
                 "UPDATE drafts SET status = 'cancelled', version = version + 1, updated_at = ? "
                 "WHERE draft_id = ?",
@@ -146,7 +160,8 @@ class Store:
             )
         return {
             "draft_id": row["draft_id"],
-            "released_slot": row["slot"],
+            # 被正式排期挤掉的草稿本就不占位，不能声称释放了时段
+            "released_slot": row["slot"] if released else None,
             "version": row["version"] + 1,
         }
 
@@ -164,9 +179,10 @@ class Store:
         try:
             with self._tx() as conn:
                 existing = conn.execute(
-                    "SELECT * FROM drafts WHERE material_id = ? AND account = ?",
-                    (material_id, account),
+                    "SELECT * FROM drafts WHERE material_id = ?", (material_id,)
                 ).fetchone()
+                if existing and existing["account"] != account:
+                    existing = None  # 账号变了：不算幂等命中，按更新处理
                 # 幂等：同一素材、同一时段、同一状态且占位仍在 → 不写入，返回原草稿
                 if existing and existing["slot"] == slot and existing["status"] == status:
                     held = conn.execute(
@@ -184,8 +200,7 @@ class Store:
                             "draft_status": status,
                         }
                 conn.execute(
-                    "DELETE FROM slots WHERE kind = 'draft' AND material_id = ? AND account = ?",
-                    (material_id, account),
+                    "DELETE FROM slots WHERE kind = 'draft' AND material_id = ?", (material_id,)
                 )
                 try:
                     conn.execute(
@@ -203,7 +218,7 @@ class Store:
                 conn.execute(
                     "INSERT INTO drafts (draft_id, material_id, account, slot, status, version, "
                     "request_id, note, updated_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?) "
-                    "ON CONFLICT (material_id, account) DO UPDATE SET slot = excluded.slot, "
+                    "ON CONFLICT (draft_id) DO UPDATE SET account = excluded.account, slot = excluded.slot, "
                     "status = excluded.status, version = drafts.version + 1, "
                     "request_id = excluded.request_id, note = excluded.note, "
                     "updated_at = excluded.updated_at",

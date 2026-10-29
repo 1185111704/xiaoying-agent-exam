@@ -57,7 +57,7 @@ def test_tool_limit_stops_before_next_model_call(make_box):
     box = make_box(REQ)
     run = run_agent(Counting(script), box, max_steps=10, max_tool_calls=2)
     assert run.status == "tool_limit" and len(calls) == 2
-    assert build_report(REQ, box.ledger, run)["task_status"] == "incomplete"
+    assert build_report(REQ, box, run)["task_status"] == "incomplete"
 
 
 def test_published_claim_always_flagged(make_box):
@@ -65,7 +65,7 @@ def test_published_claim_always_flagged(make_box):
     run = run_agent(
         ScriptedPolicy([[("finish", {"summary": "M01 未发布；M02 已发布", "reason": "r"})]]), box
     )
-    assert build_report(REQ, box.ledger, run)["consistency_warnings"]
+    assert build_report(REQ, box, run)["consistency_warnings"]
 
 
 @pytest.mark.parametrize("payload", [[1], {"items": ["M02"]}, {"items": []}])

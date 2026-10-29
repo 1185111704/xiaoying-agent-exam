@@ -5,10 +5,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .agent import RunResult
-from .tools import Ledger
+from .tools import Ledger, ToolBox
 
 SAVED = {"saved", "unchanged", "updated"}
 
@@ -60,7 +61,13 @@ def _review(ledger: Ledger, mid: str) -> tuple[str, list[dict]]:
     return "passed", reasons
 
 
-def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str, Any]:
+ACTIVE = {"draft", "pending_confirmation", "confirmed"}
+
+
+def _item_report(
+    ledger: Ledger, item: dict, displaced: list[dict], state: dict | None
+) -> dict[str, Any]:
+    """state 为素材草稿在数据库中的最终状态（跨运行保留）；ledger 只说明本次运行做了什么。"""
     mid = item["material_id"]
     review_status, reasons = _review(ledger, mid)
     saves = ledger.for_material(mid, "save_draft")
@@ -68,6 +75,7 @@ def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str,
     last_save = _last(saves)
     blocked = _last(ledger.for_material(mid, "block"), lambda e: e.result.get("ok"))
     confirms = [e for e in ledger.for_material(mid, "request_confirmation") if e.result.get("ok")]
+    active = state is not None and state["status"] in ACTIVE and state["holds_slot"]
 
     pending = [
         {
@@ -78,22 +86,22 @@ def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str,
         }
         for e in confirms
     ]
-    # 时段是否改动由程序比较得出，不采信模型自报的 needs_confirmation（骨架审查 #3）
-    if good and not blocked and good.args["slot"] != item.get("publish_at"):
+    # 时段是否改动由程序比较库中草稿与要求得出，不采信模型自报的 needs_confirmation（审查 1 #3）
+    if active and state["slot"] != item.get("publish_at"):
         pending.append(
             {
                 "confirmation_id": None,
-                "question": f"建议时段 {good.args['slot']} 与要求 {item.get('publish_at')} 不同，是否接受？",
-                "context": good.result.get("context"),
+                "question": f"建议时段 {state['slot']} 与要求 {item.get('publish_at')} 不同，是否接受？",
+                "context": good.result.get("context") if good else None,
             }
         )
 
     if blocked:
         outcome = "blocked"
-    elif good:
-        outcome = "draft_saved_pending_confirmation" if pending else "draft_saved"
-    elif last_save and last_save.result.get("status") == "failed":
+    elif last_save and last_save.result.get("status") == "failed" and not good:
         outcome = "save_failed"
+    elif active:
+        outcome = "draft_saved_pending_confirmation" if pending else "draft_saved"
     elif confirms:
         outcome = "awaiting_confirmation"
     else:
@@ -104,32 +112,37 @@ def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str,
         for d in displaced
         if d.get("material_id") == mid
     ]
-    draft_src = good or last_save
+    draft: dict[str, Any] = {
+        "status": "not_saved",
+        "draft_id": None,
+        "slot": None,
+        "version": None,
+        "this_run": "none",
+    }
+    if state:
+        draft = {
+            "status": state["status"],
+            "draft_id": state["draft_id"],
+            "slot": state["slot"] if state["holds_slot"] else None,
+            "version": state["version"],
+            "this_run": "none",
+        }
+    if last_save:
+        draft["this_run"] = last_save.result.get("status") or last_save.result.get("error")
+    if good and good.result.get("previous"):
+        draft["previous"] = good.result["previous"]
     cancelled = blocked.result.get("draft_cancelled") if blocked else None
     if cancelled:
-        draft = {
-            "status": "cancelled",
-            "draft_id": cancelled["draft_id"],
-            "version": cancelled["version"],
-            "released_slot": cancelled["released_slot"],
-        }
-    else:
-        draft = {
-            "status": draft_src.result.get("status", draft_src.result.get("error"))
-            if draft_src
-            else "not_saved",
-            "draft_id": good.result.get("draft_id") if good else None,
-            "version": good.result.get("version") if good else None,
-        }
-        if good and good.result.get("previous"):
-            draft["previous"] = good.result["previous"]
+        draft["this_run"] = "cancelled"
+        draft["released_slot"] = cancelled["released_slot"]
+
     return {
         "material_id": mid,
         "review_status": review_status,
         "risk_reasons": reasons,
         "requested_slot": item.get("publish_at"),
         "fixed": bool(item.get("fixed")),
-        "suggested_slot": good.args["slot"] if good and not blocked else None,
+        "suggested_slot": state["slot"] if active and not blocked else None,
         "draft": draft,
         "pending_confirmations": pending,
         "block": {
@@ -144,10 +157,14 @@ def _item_report(ledger: Ledger, item: dict, displaced: list[dict]) -> dict[str,
     }
 
 
-def build_report(
-    request: dict, ledger: Ledger, run: RunResult, displaced: list[dict] | None = None
-) -> dict[str, Any]:
-    items = [_item_report(ledger, it, displaced or []) for it in request["items"]]
+def build_report(request: dict, toolbox: ToolBox, run: RunResult) -> dict[str, Any]:
+    """草稿信息读数据库最终状态；审核、动作、待确认来自本次运行的工具记录。"""
+    items = [
+        _item_report(
+            toolbox.ledger, it, toolbox.displaced, toolbox.store.draft_state(it["material_id"])
+        )
+        for it in request["items"]
+    ]
     outcomes = {i["outcome"] for i in items}
 
     if run.status == "error":
@@ -167,8 +184,16 @@ def build_report(
         warnings.append(
             "模型总结中出现“已发布”，与系统能力不符；以本报告为准（publish_status=not_published）。"
         )
-    if "save_failed" in outcomes and ("保存成功" in text or "已保存" in text):
-        warnings.append("模型总结声称保存成功，但记录显示存在保存失败；以本报告为准。")
+    failed = [i["material_id"] for i in items if i["outcome"] == "save_failed"]
+    for clause in re.split(r"[；;。，,\n]", text):
+        claims_saved = ("保存成功" in clause or "已保存" in clause) and "失败" not in clause
+        named = [m for m in failed if m in clause]
+        # 点名了失败素材却说成功；或未点名任何素材、笼统声称成功
+        mentions_any = any(i["material_id"] in clause for i in items)
+        if claims_saved and (named or (failed and not mentions_any)):
+            warnings.append(
+                f"模型总结“{clause.strip()}”与记录不符（保存失败：{failed}）；以本报告为准。"
+            )
 
     trace = [dict(t) for t in run.trace]
     for i, t in enumerate(trace):

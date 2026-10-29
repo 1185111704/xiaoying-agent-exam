@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from .agent import run_agent
@@ -38,12 +39,37 @@ def load_request(path: Path) -> dict:
     items = request.get("items")
     if not isinstance(items, list) or not items:
         raise ValueError("请求必须包含非空的 items 列表")
+    seen = set()
     for i, it in enumerate(items):
         if not isinstance(it, dict):
             raise ValueError(f"items[{i}] 必须是对象")
-        if not it.get("material_id") or not it.get("publish_at"):
+        mid, at = it.get("material_id"), it.get("publish_at")
+        if not isinstance(mid, str) or not mid or not isinstance(at, str) or not at:
             raise ValueError(f"items[{i}] 缺少 material_id 或 publish_at")
+        if mid in seen:
+            raise ValueError(f"items[{i}] 素材 {mid} 重复出现")
+        seen.add(mid)
+        _check_time(at, f"items[{i}].publish_at")
+        if "fixed" in it and not isinstance(it["fixed"], bool):
+            raise ValueError(f"items[{i}].fixed 必须是布尔值")
+        if "window" in it:
+            w = it["window"]
+            if not (isinstance(w, list) and len(w) == 2 and all(isinstance(x, str) for x in w)):
+                raise ValueError(f"items[{i}].window 必须是 [开始, 结束] 两个时间字符串")
+            for x in w:
+                _check_time(x, f"items[{i}].window")
+            if w[0] > w[1]:
+                raise ValueError(f"items[{i}].window 开始时间晚于结束时间")
     return request
+
+
+def _check_time(value: str, where: str) -> None:
+    try:
+        ok = datetime.strptime(value, "%Y-%m-%d %H:%M").strftime("%Y-%m-%d %H:%M") == value
+    except ValueError:
+        ok = False
+    if not ok:
+        raise ValueError(f"{where} 须为 YYYY-MM-DD HH:MM（补零），实际为 {value!r}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -94,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     store = Store(args.db or settings.db_path, fault=args.fault_save)
     toolbox = ToolBox(request, args.data_dir or settings.data_dir, store)
     run = run_agent(policy, toolbox, settings.max_steps, settings.max_tool_calls)
-    report = build_report(request, toolbox.ledger, run, toolbox.displaced)
+    report = build_report(request, toolbox, run)
     report["policy"] = args.policy if args.policy == "mock" else f"llm:{settings.llm_model}"
 
     text = json.dumps(report, ensure_ascii=False, indent=2)
