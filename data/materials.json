@@ -1,0 +1,10 @@
+{
+  "M01": {"title": "新款三轴云台开箱", "account": "douyin_main", "caption": "开箱新款三轴云台，看看实拍防抖效果", "cover": "m01.jpg", "tags": ["开箱", "云台"], "music": {"used": true, "license_id": "LIC-0101"}, "people": {"present": false}},
+  "M02": {"title": "周末旅拍调色教程", "account": "douyin_main", "caption": "三步调出胶片感，新手也能上手", "cover": "m02.jpg", "tags": ["教程"], "music": {"used": false}, "people": {"present": false}},
+  "M03": {"title": "城市夜景延时", "account": "xhs_main", "caption": null, "cover": null, "tags": [], "music": {"used": false}, "people": {"present": false}},
+  "M04": {"title": "防抖对比测评", "account": "douyin_main", "caption": "全网最强防抖，第一名没有之一", "cover": "m04.jpg", "tags": ["测评"], "music": {"used": false}, "people": {"present": false}},
+  "M05": {"title": "骑行博主用户故事", "account": "xhs_main", "caption": "一位骑行博主用运动相机记录通勤路", "cover": "m05.jpg", "tags": ["用户故事"], "music": {"used": false}, "people": {"present": true, "portrait_release_id": null}},
+  "M06": {"title": "露营混剪", "account": "xhs_main", "caption": "周末露营，记录山里的星空", "cover": "m06.jpg", "tags": ["露营"], "music": {"used": true, "license_id": null}, "people": {"present": false}},
+  "M07": {"title": "新品发布会预热", "account": "douyin_main", "caption": "11 月 3 日晚 6 点，新品见", "cover": "m07.jpg", "tags": ["发布会"], "music": {"used": false}, "people": {"present": false}},
+  "M08": {"title": "新品海报动图", "account": "douyin_main", "caption": "新品海报抢先看", "cover": "m08.jpg", "tags": ["海报"], "music": {"used": false}, "people": {"present": false}}
+}

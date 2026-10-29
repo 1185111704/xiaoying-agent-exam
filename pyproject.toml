@@ -4,6 +4,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # 行长由 ruff format 管理；中文提示词字符串不强行折行
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
